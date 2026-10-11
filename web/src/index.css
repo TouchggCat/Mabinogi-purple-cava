@@ -49,7 +49,28 @@ header p { margin: 0.3rem 0 1.5rem; }
 .slot + .slot { border-top: 1px solid var(--line); }
 .slot-open { background: var(--open-bg); }
 .slot-label { font-size: 0.9rem; color: var(--muted); }
-.slot-time { font-size: clamp(1.3rem, 7vw, 1.8rem); font-weight: 600; font-variant-numeric: tabular-nums; white-space: pre; }
+.slot-row { display: flex; align-items: center; gap: 0.5rem; }
+.slot-time { font-size: clamp(1.1rem, 5.8vw, 1.8rem); font-weight: 600; font-variant-numeric: tabular-nums; white-space: pre; }
+
+.copy-btn {
+  position: relative; flex: none; margin-left: auto; display: grid; place-items: center;
+  width: 2.25rem; height: 2.25rem; padding: 0.45rem; border: 0; border-radius: 0.5rem;
+  background: transparent; color: var(--muted); cursor: pointer;
+}
+.copy-btn svg { width: 100%; height: 100%; }
+.copy-btn:hover, .copy-btn:focus-visible { background: var(--open-bg); color: var(--accent); }
+.copy-copied { color: var(--accent); }
+.copy-failed { color: var(--error); }
+.copy-tip {
+  position: absolute; bottom: calc(100% + 0.25rem); right: 0; white-space: nowrap;
+  font-size: 0.75rem; padding: 0.15rem 0.45rem; border-radius: 0.35rem;
+  background: var(--text); color: var(--card); pointer-events: none;
+}
+.copy-tip:empty { display: none; }
+
+@media (max-width: 480px) {
+  .slot { padding: 1rem; }
+}
 .slot-sub { color: var(--muted); margin-top: 0.2rem; font-variant-numeric: tabular-nums; }
 .empty { padding: 1.5rem 1.25rem; margin: 0; }
 
