@@ -16,6 +16,7 @@ web/node_modules/
 web/dist/
 web/dist-ssr/
 *.tsbuildinfo
+.vite/
 *.log
 
 # Vercel CLI
