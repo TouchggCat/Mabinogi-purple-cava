@@ -1,0 +1,37 @@
+# 測試：GitHub 主機能否通過官網 Cloudflare 驗證並抓到維護公告（手動執行）
+name: crawl-test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONIOENCODING: utf-8
+      CRAWL_DEBUG_DIR: debug
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: 安裝套件與 Chromium
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      # 爬蟲需要「有畫面」的瀏覽器才能過 Cloudflare，用 Xvfb 虛擬螢幕
+      - name: 爬取官網維護公告
+        run: xvfb-run -a python -m backend --crawl-once
+
+      - name: 上傳失敗截圖
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-debug
+          path: debug/
+          if-no-files-found: ignore

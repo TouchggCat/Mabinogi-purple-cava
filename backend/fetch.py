@@ -6,6 +6,8 @@
 import contextlib
 import json
 import logging
+import os
+from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
@@ -45,6 +47,16 @@ class NoticeSession:
         return self._get_json(config.THREAD_API.format(thread_id=thread_id))
 
 
+def _save_debug(page) -> None:
+    """設定 CRAWL_DEBUG_DIR 時，驗證失敗留下截圖與 HTML 方便排查（GitHub Actions 用）。"""
+    out = os.getenv("CRAWL_DEBUG_DIR")
+    if not out:
+        return
+    Path(out).mkdir(parents=True, exist_ok=True)
+    page.screenshot(path=str(Path(out) / "cloudflare.png"), full_page=True)
+    (Path(out) / "cloudflare.html").write_text(page.content(), encoding="utf-8")
+
+
 @contextlib.contextmanager
 def notice_session(headed: bool = False):
     """開啟瀏覽器並通過 Cloudflare 驗證；headed=True 時視窗顯示在螢幕上（需手動驗證時使用）。"""
@@ -63,6 +75,7 @@ def notice_session(headed: bool = False):
                     break
                 page.wait_for_timeout(1000)
             else:
+                _save_debug(page)
                 raise CrawlError(f"Cloudflare 驗證未通過（標題：{page.title()}），請用 --crawl-once --headed 手動驗證一次")
             yield NoticeSession(page)
         finally:
