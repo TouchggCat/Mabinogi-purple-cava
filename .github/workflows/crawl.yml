@@ -24,9 +24,9 @@ jobs:
       PURPLE_API_URL: ${{ secrets.PURPLE_API_URL }}
       CRAWL_TOKEN: ${{ secrets.CRAWL_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: pip
@@ -48,7 +48,7 @@ jobs:
 
       - name: 上傳失敗截圖
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: cloudflare-debug
           path: debug/
