@@ -10,6 +10,7 @@
   --warn: #b25e00;
   --warn-bg: #fff3e0;
   --error: #c62828;
+  --link: #1a66d2;
   color-scheme: light;
   font-family: system-ui, 'Microsoft JhengHei', 'PingFang TC', sans-serif;
 }
@@ -27,6 +28,7 @@
     --warn: #ffb74d;
     --warn-bg: #33260f;
     --error: #ff7b7b;
+    --link: #74b4ff;
     color-scheme: dark;
   }
 }
@@ -69,7 +71,8 @@ header p { margin: 0.3rem 0 1.5rem; }
 .maint { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
 .maint h3 { margin: 0 0 0.4rem; font-size: 0.95rem; color: var(--muted); font-weight: 500; }
 .maint .recent-maint { margin: 0 0 0.4rem; font-weight: 600; }
-.maint a { color: var(--text); font-weight: 600; }
+.maint a { color: var(--link); font-weight: 600; text-decoration: none; text-underline-offset: 0.25em; }
+.maint a:hover, .maint a:focus-visible { text-decoration: underline; }
 .maint p { margin: 0.4rem 0 0; font-variant-numeric: tabular-nums; }
 
 .overlay { position: fixed; inset: 0; background: rgb(0 0 0 / 0.45); display: grid; place-items: center; padding: 1rem; }
@@ -77,6 +80,24 @@ header p { margin: 0.3rem 0 1.5rem; }
 .dialog h2 { margin: 0 0 0.5rem; font-size: 1.2rem; }
 .field { display: block; margin-top: 0.8rem; }
 .field span { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.25rem; }
-.dialog input { width: 100%; font-size: 1.4rem; padding: 0.5rem; border: 1px solid var(--line); border-radius: 0.5rem; background: var(--bg); color: var(--text); }
+/* 輸入欄：統一手機（iOS Safari／Android）與桌機的外觀 */
+.field-box { position: relative; display: block; }
+.dialog input {
+  -webkit-appearance: none; appearance: none; display: block;
+  width: 100%; min-width: 0; height: 3rem; margin: 0; padding: 0 0.75rem;
+  font: inherit; font-size: 1.25rem; font-variant-numeric: tabular-nums; line-height: 3rem; text-align: left;
+  border: 1px solid var(--line); border-radius: 0.5rem; background: var(--bg); color: var(--text);
+}
+.dialog input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.field-box.has-icon input { padding-right: 2.75rem; }
+/* iOS：日期時間文字預設置中、高度會縮 */
+.dialog input::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.dialog input::-webkit-datetime-edit { padding: 0; }
+/* Chrome：隱藏原生小圖示，改成整個欄位都能點開選擇器 */
+.dialog input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; opacity: 0; cursor: pointer; }
+.field-icon {
+  position: absolute; right: 0.75rem; top: 50%; translate: 0 -50%;
+  width: 1.4rem; height: 1.4rem; color: var(--muted); pointer-events: none;
+}
 .confirm-time { font-size: 1.8rem; font-weight: 600; margin: 0.2rem 0 0.6rem; color: var(--accent); }
 .actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.2rem; }
