@@ -19,15 +19,7 @@ THREAD_URL = f"{NOTICE_PAGE}/{{thread_id}}"
 PAGE_SIZE = 20
 
 BROWSER_PROFILE = ROOT / ".browser-profile"
-DB_PATH = ROOT / "data" / "bot.db"
-LOG_PATH = ROOT / "data" / "bot.log"
 
-CRAWL_INTERVAL_MIN = 30
-WEB_DIST = ROOT / "web" / "dist"
-
-# 雲端平台會給 PORT，此時預設對外監聽；本機預設只開給自己
-HOST = os.getenv("HOST") or ("0.0.0.0" if os.getenv("PORT") else "127.0.0.1")
-PORT = int(os.getenv("PORT", "8000"))
-
-# 允許跨網域呼叫 API 的前端網址（逗號分隔），例如 https://xxx.vercel.app
-CORS_ORIGINS = [o.strip().rstrip("/") for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+# 上傳目的地（Vercel 網站）與共用密鑰；未設定時只印出結果
+PURPLE_API_URL = os.getenv("PURPLE_API_URL", "").rstrip("/")
+CRAWL_TOKEN = os.getenv("CRAWL_TOKEN", "")

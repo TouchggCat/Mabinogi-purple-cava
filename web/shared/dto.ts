@@ -1,4 +1,4 @@
-/** 後端 API 的原始 JSON 結構（時間皆為 ISO 8601 字串） */
+/** API 的 JSON 結構（前端、Vercel Functions 與 Python 爬蟲共用約定；時間皆為 ISO 8601 字串） */
 
 export interface SpanDto {
   start: string
@@ -23,7 +23,6 @@ export interface StatusDto {
   calibrated_by: string | null
   recent: SpanDto | null
   next: SpanDto | null
-  text: string | null
   needs_calibration: boolean
   maintenance: MaintenanceDto | null
   last_crawl: string | null
@@ -37,4 +36,14 @@ export interface CalibrateRequestDto {
 
 export interface ErrorDto {
   detail?: string
+}
+
+/** 爬蟲上傳的單則維護公告（POST /api/maintenance） */
+export interface MaintenancePostDto extends MaintenanceDto {
+  post_id: string
+}
+
+export interface MaintenanceUploadDto {
+  crawled_at: string
+  posts: MaintenancePostDto[]
 }

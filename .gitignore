@@ -17,3 +17,6 @@ web/dist/
 web/dist-ssr/
 *.tsbuildinfo
 *.log
+
+# Vercel CLI
+.vercel/

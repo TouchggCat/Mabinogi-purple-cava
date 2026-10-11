@@ -84,7 +84,7 @@ describe('PurpleStatus', () => {
     calibrated_at: '2026-10-07T20:00:00+08:00', calibrated_by: '阿紫',
     recent: { start: '2026-10-07T14:40:00+08:00', end: '2026-10-07T14:55:00+08:00' },
     next: { start: '2026-10-09T02:55:00+08:00', end: '2026-10-09T03:10:00+08:00' },
-    text: '', needs_calibration: true, maintenance: null, last_crawl: null,
+    needs_calibration: true, maintenance: null, last_crawl: null,
   }
 
   it('maps the DTO and derives flags', () => {

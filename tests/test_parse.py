@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from backend.config import TZ
-from backend.parse import is_maintenance_title, parse_maintenance
+from crawler.config import TZ
+from crawler.parse import is_maintenance_title, parse_maintenance
 
 FIX = Path(__file__).parent / "fixtures"
 

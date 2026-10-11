@@ -1,4 +1,4 @@
-import type { StatusDto } from './dto'
+import type { StatusDto } from '@shared/dto'
 import { Maintenance } from './Maintenance'
 import { SpawnSpan } from './SpawnSpan'
 

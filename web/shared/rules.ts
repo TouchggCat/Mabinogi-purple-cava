@@ -1,0 +1,67 @@
+/**
+ * 紫洞規則（前端與 API 共用）。
+ * 本資料夾內的 import 一律寫相對路徑並加 .js，Vercel Functions（Node ESM）才找得到。
+ */
+import { TaipeiClock } from './TaipeiClock.js'
+
+export const PURPLE = {
+  /** 下一場 = 上一場開啟 + 36 小時 15 分鐘 */
+  CYCLE_MS: (36 * 60 + 15) * 60_000,
+  /** 每場開放 15 分鐘 */
+  OPEN_MS: 15 * 60_000,
+  /** 校正可接受範圍：現在 ±3 天 */
+  CALIBRATION_WINDOW_DAYS: 3,
+  /** 校正人員名稱上限 */
+  CALIBRATOR_MAX_LENGTH: 20,
+} as const
+
+export const APP = {
+  /** 狀態輪詢間隔 */
+  POLL_MS: 60_000,
+  /** 官網公告爬取間隔（GitHub Actions 排程，僅顯示用） */
+  CRAWL_INTERVAL_MIN: 30,
+  /** 維護在此天數內 → 顯示「近期有維護紀錄」 */
+  RECENT_MAINTENANCE_DAYS: 3,
+} as const
+
+/** 一場紫洞的關閉時間 */
+export function closingOf(start: Date): Date {
+  return new Date(start.getTime() + PURPLE.OPEN_MS)
+}
+
+/**
+ * 由校正的開啟時間推算：最近一場（<= now 的最後一場；anchor 在未來時即 anchor 本身）與下一場。
+ */
+export function spawnsAround(anchor: Date, now: Date): { recent: Date; next: Date } {
+  const k = Math.max(0, Math.floor((now.getTime() - anchor.getTime()) / PURPLE.CYCLE_MS))
+  const recent = new Date(anchor.getTime() + k * PURPLE.CYCLE_MS)
+  return { recent, next: new Date(recent.getTime() + PURPLE.CYCLE_MS) }
+}
+
+export type CalibrationCheck =
+  | { ok: true; spawn: Date; by: string }
+  | { ok: false; error: string }
+
+/** 校正輸入驗證：日期 + 時間（台灣時間）須在現在 ±3 天內，校正人員必填 */
+export function checkCalibration(date: string, time: string, by: string, now: Date): CalibrationCheck {
+  const spawn = TaipeiClock.fromInputs(date, time)
+  const windowMs = PURPLE.CALIBRATION_WINDOW_DAYS * TaipeiClock.DAY_MS
+  if (!spawn || Math.abs(spawn.getTime() - now.getTime()) > windowMs) {
+    return { ok: false, error: `請選擇現在前後 ${PURPLE.CALIBRATION_WINDOW_DAYS} 天內的日期與時間` }
+  }
+  const name = by.trim()
+  if (!name) return { ok: false, error: '請輸入校正人員' }
+  if (name.length > PURPLE.CALIBRATOR_MAX_LENGTH) {
+    return { ok: false, error: `校正人員最多 ${PURPLE.CALIBRATOR_MAX_LENGTH} 字` }
+  }
+  return { ok: true, spawn, by: name }
+}
+
+/** API 傳送格式 `YYYY-MM-DD HH:MM` ↔ 日期、時間欄位 */
+export const CalibrationTime = {
+  format: (date: string, time: string) => `${date} ${time}`,
+  parse: (value: string): [string, string] | null => {
+    const m = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})$/.exec(value.trim())
+    return m ? [m[1], m[2]] : null
+  },
+}

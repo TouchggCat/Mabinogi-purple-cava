@@ -1,0 +1,55 @@
+# 每 30 分鐘爬官網維護公告並上傳到 Vercel 網站
+# 需在 GitHub repo → Settings → Secrets and variables → Actions 設定：
+#   PURPLE_API_URL  網站網址，例如 https://xxx.vercel.app（結尾不要斜線）
+#   CRAWL_TOKEN     與 Vercel 環境變數 CRAWL_TOKEN 相同的密鑰
+# 未設定時只爬取並印出，不上傳。
+name: crawl
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: crawl
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONIOENCODING: utf-8
+      CRAWL_DEBUG_DIR: debug
+      PURPLE_API_URL: ${{ secrets.PURPLE_API_URL }}
+      CRAWL_TOKEN: ${{ secrets.CRAWL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: 安裝套件與 Chromium
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      # 爬蟲需要「有畫面」的瀏覽器才能過 Cloudflare，用 Xvfb 虛擬螢幕
+      - name: 爬取並上傳
+        run: |
+          if [ -n "$PURPLE_API_URL" ] && [ -n "$CRAWL_TOKEN" ]; then
+            xvfb-run -a python -m crawler --upload
+          else
+            echo "::warning::未設定 PURPLE_API_URL / CRAWL_TOKEN，只爬取不上傳"
+            xvfb-run -a python -m crawler
+          fi
+
+      - name: 上傳失敗截圖
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-debug
+          path: debug/
+          if-no-files-found: ignore

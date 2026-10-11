@@ -1,5 +1,5 @@
 import { PURPLE } from '@/config'
-import type { SpanDto } from './dto'
+import type { SpanDto } from '@shared/dto'
 
 /** 一場紫洞：開啟到關閉 */
 export class SpawnSpan {

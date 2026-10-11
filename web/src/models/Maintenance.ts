@@ -1,5 +1,5 @@
 import { TaipeiClock } from '@/utils'
-import type { MaintenanceDto } from './dto'
+import type { MaintenanceDto } from '@shared/dto'
 
 const optionalDate = (v: string | null) => (v ? new Date(v) : null)
 

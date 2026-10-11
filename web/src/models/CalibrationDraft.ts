@@ -1,7 +1,7 @@
 import { PURPLE } from '@/config'
 import { TaipeiClock } from '@/utils'
-import type { CalibrateRequestDto } from './dto'
-import { SpawnSpan } from './SpawnSpan'
+import type { CalibrateRequestDto } from '@shared/dto'
+import { CalibrationTime, checkCalibration, spawnsAround } from '@shared/rules'
 
 export interface CalibrationPreview {
   /** 將設為「最近紫洞時間」的開啟時間 */
@@ -17,10 +17,7 @@ export type CalibrationResult =
 
 type Fields = Pick<CalibrationDraft, 'date' | 'time' | 'by'>
 
-/**
- * 校正表單的輸入值與驗證規則（與後端相同）：
- * 日期 + 時間須在現在 ±3 天內；未來時間也接受，視為最近一場。
- */
+/** 校正表單的輸入值；驗證規則與 API 共用（@shared/rules） */
 export class CalibrationDraft {
   constructor(readonly date: string, readonly time: string, readonly by: string) {}
 
@@ -46,22 +43,13 @@ export class CalibrationDraft {
   }
 
   validate(now: Date): CalibrationResult {
-    const spawn = TaipeiClock.fromInputs(this.date, this.time)
-    const windowMs = PURPLE.CALIBRATION_WINDOW_DAYS * TaipeiClock.DAY_MS
-    if (!spawn || Math.abs(spawn.getTime() - now.getTime()) > windowMs) {
-      return { ok: false, error: `請選擇現在前後 ${PURPLE.CALIBRATION_WINDOW_DAYS} 天內的日期與時間` }
-    }
-    if (!this.calibrator) return { ok: false, error: '請輸入校正人員' }
-    if (this.calibrator.length > PURPLE.CALIBRATOR_MAX_LENGTH) {
-      return { ok: false, error: `校正人員最多 ${PURPLE.CALIBRATOR_MAX_LENGTH} 字` }
-    }
-
-    let next = SpawnSpan.openingAt(spawn).following()
-    while (next.hasStarted(now)) next = next.following()
-    return { ok: true, preview: { spawn, next: next.start, by: this.calibrator } }
+    const check = checkCalibration(this.date, this.time, this.by, now)
+    if (!check.ok) return check
+    const { next } = spawnsAround(check.spawn, now)
+    return { ok: true, preview: { spawn: check.spawn, next, by: check.by } }
   }
 
   toRequest(): CalibrateRequestDto {
-    return { time: `${this.date} ${this.time}`, by: this.calibrator }
+    return { time: CalibrationTime.format(this.date, this.time), by: this.calibrator }
   }
 }

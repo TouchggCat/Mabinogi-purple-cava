@@ -1,0 +1,94 @@
+import type { MaintenancePostDto } from '../../shared/dto.js'
+
+export interface Calibration {
+  /** 校正的紫洞開啟時間 (ISO) */
+  anchor: string
+  /** 校正操作時間 (ISO) */
+  calibratedAt: string
+  by: string
+}
+
+export interface Snapshot {
+  calibration: Calibration | null
+  maintenance: MaintenancePostDto[]
+  lastCrawl: string | null
+}
+
+/** 資料存取介面：正式環境用 Upstash Redis，本機開發與測試用記憶體 */
+export interface PurpleStore {
+  snapshot(): Promise<Snapshot>
+  saveCalibration(c: Calibration): Promise<void>
+  saveMaintenance(posts: MaintenancePostDto[], crawledAt: string): Promise<void>
+}
+
+const KEYS = {
+  calibration: 'purple:calibration',
+  maintenance: 'purple:maintenance',
+  lastCrawl: 'purple:last_crawl',
+} as const
+
+const parse = <T>(raw: string | null): T | null => (raw ? (JSON.parse(raw) as T) : null)
+
+export class MemoryStore implements PurpleStore {
+  private data: Snapshot = { calibration: null, maintenance: [], lastCrawl: null }
+
+  async snapshot(): Promise<Snapshot> {
+    return structuredClone(this.data)
+  }
+
+  async saveCalibration(c: Calibration): Promise<void> {
+    this.data.calibration = { ...c }
+  }
+
+  async saveMaintenance(posts: MaintenancePostDto[], crawledAt: string): Promise<void> {
+    this.data.maintenance = structuredClone(posts)
+    this.data.lastCrawl = crawledAt
+  }
+}
+
+/** Upstash Redis REST API（不需額外套件）；每次讀取只用一個 MGET 指令 */
+export class RedisStore implements PurpleStore {
+  constructor(private readonly url: string, private readonly token: string) {}
+
+  private async command<T>(...args: string[]): Promise<T> {
+    const res = await fetch(this.url, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(args),
+    })
+    const body = (await res.json()) as { result?: T; error?: string }
+    if (!res.ok || body.error) throw new Error(`Redis 錯誤：${body.error ?? res.status}`)
+    return body.result as T
+  }
+
+  async snapshot(): Promise<Snapshot> {
+    const [cal, maint, crawl] = await this.command<(string | null)[]>(
+      'MGET', KEYS.calibration, KEYS.maintenance, KEYS.lastCrawl,
+    )
+    return {
+      calibration: parse<Calibration>(cal),
+      maintenance: parse<MaintenancePostDto[]>(maint) ?? [],
+      lastCrawl: crawl,
+    }
+  }
+
+  async saveCalibration(c: Calibration): Promise<void> {
+    await this.command('SET', KEYS.calibration, JSON.stringify(c))
+  }
+
+  async saveMaintenance(posts: MaintenancePostDto[], crawledAt: string): Promise<void> {
+    await this.command('MSET', KEYS.maintenance, JSON.stringify(posts), KEYS.lastCrawl, crawledAt)
+  }
+}
+
+/**
+ * 依環境變數選擇儲存：Vercel 接上 Upstash 後會有 KV_REST_API_URL/TOKEN（或 UPSTASH_REDIS_REST_URL/TOKEN）。
+ * 都沒有時用記憶體（僅限本機開發，重啟即清空）。
+ */
+export function createStore(env: Record<string, string | undefined> = process.env): PurpleStore {
+  const url = env.KV_REST_API_URL ?? env.UPSTASH_REDIS_REST_URL
+  const token = env.KV_REST_API_TOKEN ?? env.UPSTASH_REDIS_REST_TOKEN
+  if (url && token) return new RedisStore(url, token)
+  if (env.VERCEL) throw new Error('未設定 Upstash Redis（KV_REST_API_URL / KV_REST_API_TOKEN）')
+  return new MemoryStore()
+}
