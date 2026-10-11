@@ -15,7 +15,8 @@
   --next-ink: #ffffff;
   --ended: #e6e1ee;
   --ended-ink: #5d536f;
-  --highlight: #12a33f;
+  --highlight: #17bf4c;
+  --highlight-2: #e0338a;
   color-scheme: light;
   font-family: system-ui, 'Microsoft JhengHei', 'PingFang TC', sans-serif;
 }
@@ -38,7 +39,8 @@
     --next-ink: #0f2a22;
     --ended: #2f2640;
     --ended-ink: #b9aecb;
-    --highlight: #4ade80;
+    --highlight: #6cf7a0;
+    --highlight-2: #ff7ac2;
     color-scheme: dark;
   }
 }
@@ -91,6 +93,7 @@ header p { margin: 0.3rem 0 1.5rem; }
 .badge-warn { background: var(--warn-bg); color: var(--warn); }
 
 .highlight { color: var(--highlight); font-weight: 700; }
+.highlight-2 { color: var(--highlight-2); font-weight: 700; }
 .alert { background: var(--warn-bg); color: var(--warn); border-radius: 0.75rem; padding: 0.8rem 1rem; margin-bottom: 1rem; }
 
 .btn {

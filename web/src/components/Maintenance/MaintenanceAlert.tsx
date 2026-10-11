@@ -2,7 +2,7 @@
 export function CalibrationNotice() {
   return (
     <div className="alert" role="note">
-      若近期有維護則需手動校正時間，如不確定請告知<span className="highlight">初音過去</span>
+      若近期有維護則需手動校正時間，有問題請告知<span className="highlight">初音過去</span><span className="highlight-2">【迪恩】</span>
     </div>
   )
 }
