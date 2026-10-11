@@ -1,0 +1,19 @@
+# 機密設定
+.env
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 執行時資料（資料庫、記錄、瀏覽器設定檔）
+data/
+.browser-profile/
+
+# 前端：套件與打包（build）輸出
+web/node_modules/
+web/dist/
+web/dist-ssr/
+*.tsbuildinfo
+*.log
