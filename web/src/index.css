@@ -49,8 +49,7 @@ header p { margin: 0.3rem 0 1.5rem; }
 .slot + .slot { border-top: 1px solid var(--line); }
 .slot-open { background: var(--open-bg); }
 .slot-label { font-size: 0.9rem; color: var(--muted); }
-.slot-time { display: flex; gap: 1rem; font-size: 1.8rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-.slot-date { min-width: 4.2ch; }
+.slot-time { font-size: clamp(1.3rem, 7vw, 1.8rem); font-weight: 600; font-variant-numeric: tabular-nums; white-space: pre; }
 .slot-sub { color: var(--muted); margin-top: 0.2rem; font-variant-numeric: tabular-nums; }
 .empty { padding: 1.5rem 1.25rem; margin: 0; }
 
