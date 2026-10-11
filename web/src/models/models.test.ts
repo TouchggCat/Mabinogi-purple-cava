@@ -31,6 +31,13 @@ describe('SpawnSpan', () => {
     expect(next.end).toEqual(tw('2026-10-07T00:30:00'))
   })
 
+  it('reports its phase', () => {
+    const span = SpawnSpan.openingAt(tw('2026-10-07T14:40:00'))
+    expect(span.phase(tw('2026-10-07T14:39:59'))).toBe('upcoming')
+    expect(span.phase(tw('2026-10-07T14:40:00'))).toBe('open')
+    expect(span.phase(tw('2026-10-07T14:55:00'))).toBe('ended')
+  })
+
   it('is open for 15 minutes', () => {
     const span = SpawnSpan.openingAt(tw('2026-10-07T14:40:00'))
     expect(span.isOpen(tw('2026-10-07T14:54:59'))).toBe(true)

@@ -1,6 +1,8 @@
 import { PURPLE } from '@/config'
 import type { SpanDto } from '@shared/dto'
 
+export type SpawnPhase = 'upcoming' | 'open' | 'ended'
+
 /** 一場紫洞：開啟到關閉 */
 export class SpawnSpan {
   constructor(readonly start: Date, readonly end: Date) {}
@@ -24,5 +26,11 @@ export class SpawnSpan {
 
   isOpen(now: Date): boolean {
     return this.hasStarted(now) && now < this.end
+  }
+
+  /** 尚未開始／開放中／已結束 */
+  phase(now: Date): SpawnPhase {
+    if (!this.hasStarted(now)) return 'upcoming'
+    return now < this.end ? 'open' : 'ended'
   }
 }

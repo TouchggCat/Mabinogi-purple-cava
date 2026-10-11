@@ -14,7 +14,7 @@ export function StatusCard({ status, now }: Props) {
       {recent && next ? (
         <>
           <SpawnSlot label="最近紫洞時間" span={recent} now={now} />
-          <SpawnSlot label="下一次預計" span={next} now={now} showCountdown />
+          <SpawnSlot label="下一次預計" span={next} now={now} />
         </>
       ) : (
         <p className="empty">尚未校正，請按下方按鈕輸入紫洞開啟時間。</p>

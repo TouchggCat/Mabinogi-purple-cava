@@ -13,6 +13,8 @@
   --link: #1a66d2;
   --next: #0e8a6a;
   --next-ink: #ffffff;
+  --ended: #e6e1ee;
+  --ended-ink: #5d536f;
   color-scheme: light;
   font-family: system-ui, 'Microsoft JhengHei', 'PingFang TC', sans-serif;
 }
@@ -33,6 +35,8 @@
     --link: #74b4ff;
     --next: #4fd1a8;
     --next-ink: #0f2a22;
+    --ended: #2f2640;
+    --ended-ink: #b9aecb;
     color-scheme: dark;
   }
 }
@@ -78,8 +82,10 @@ header p { margin: 0.3rem 0 1.5rem; }
 .empty { padding: 1.5rem 1.25rem; margin: 0; }
 
 .badge { display: inline-block; font-size: 0.8rem; padding: 0.15rem 0.55rem; border-radius: 999px; margin-left: 0.4rem; }
-.badge-open { background: var(--accent); color: var(--accent-ink); margin: 0.4rem 0 0; }
-.badge-next { background: var(--next); color: var(--next-ink); margin: 0.4rem 0 0; font-variant-numeric: tabular-nums; }
+.badge-open, .badge-upcoming, .badge-ended { margin: 0.4rem 0 0; font-variant-numeric: tabular-nums; }
+.badge-open { background: var(--accent); color: var(--accent-ink); }
+.badge-upcoming { background: var(--next); color: var(--next-ink); }
+.badge-ended { background: var(--ended); color: var(--ended-ink); }
 .badge-warn { background: var(--warn-bg); color: var(--warn); }
 
 .alert { background: var(--warn-bg); color: var(--warn); border-radius: 0.75rem; padding: 0.8rem 1rem; margin-bottom: 1rem; }
