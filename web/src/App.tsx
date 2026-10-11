@@ -13,7 +13,7 @@ export default function App() {
     <main className="page">
       <header>
         <h1>初音的瑪奇紫洞發布器</h1>
-        <p className="muted">瑪奇 Mobile・每 36 小時 15 分鐘刷新，開放 15 分鐘</p>
+        <p className="muted">每 36 小時 15 分鐘刷新，開放 15 分鐘</p>
       </header>
 
       <CalibrationNotice />
