@@ -4,6 +4,7 @@ from datetime import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -43,6 +44,9 @@ def create_app(store: Store, crawl: bool = True) -> FastAPI:
             scheduler.shutdown(wait=False)
 
     app = FastAPI(lifespan=lifespan)
+    if config.CORS_ORIGINS:
+        app.add_middleware(CORSMiddleware, allow_origins=config.CORS_ORIGINS,
+                           allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
     @app.get("/api/status")
     def get_status():

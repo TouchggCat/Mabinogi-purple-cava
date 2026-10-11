@@ -22,6 +22,16 @@ cd web; npm install; npm run build; cd ..
 
 給別人用：`.env` 設 `HOST=0.0.0.0`（區網），或用 ngrok/cloudflared 對外開放 8000。注意任何能開網頁的人都能校正。
 
+## 部署（前端 Vercel + 後端分開）
+後端（Render 等）：
+- Build：`pip install -r requirements.txt`　Start：`python -m backend`
+- 環境變數：`CORS_ORIGINS=https://你的前端.vercel.app`（有 PORT 時自動監聽 0.0.0.0）
+- 注意：雲端無螢幕，官網爬蟲（需有畫面的瀏覽器過 Cloudflare）會失敗；SQLite 在免費方案重啟會清空
+
+前端（Vercel）：
+- Root Directory：`web`，Framework：Vite（Build `npm run build`、Output `dist`）
+- 環境變數：`VITE_API_BASE=https://你的後端網址`（不含 /api），修改後需重新部署
+
 ## 結構
 - `backend/` FastAPI：`/api/status`、`/api/calibrate`；`parse.py` 維護公告解析、`purple.py` 紫洞計算、`fetch.py` Playwright 爬蟲
 - `web/` React + TypeScript (Vite)，build 結果 `web/dist` 由後端直接提供（`@/` = `web/src/`）

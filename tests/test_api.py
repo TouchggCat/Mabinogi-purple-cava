@@ -84,3 +84,13 @@ def test_calibrated_by(ctx):
 def test_calibrate_requires_by(ctx, by):
     client, _, _ = ctx
     assert client.post("/api/calibrate", json={"time": "14:40", "by": by}).status_code == 400
+
+
+def test_cors(monkeypatch):
+    monkeypatch.setattr(app_mod.config, "CORS_ORIGINS", ["https://purple.vercel.app"])
+    client = TestClient(create_app(Store(":memory:"), crawl=False))
+    ok = client.options("/api/calibrate", headers={"Origin": "https://purple.vercel.app",
+                                                    "Access-Control-Request-Method": "POST"})
+    assert ok.headers["access-control-allow-origin"] == "https://purple.vercel.app"
+    other = client.get("/api/status", headers={"Origin": "https://evil.example"})
+    assert "access-control-allow-origin" not in other.headers

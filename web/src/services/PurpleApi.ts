@@ -7,9 +7,12 @@ export class ApiError extends Error {
   }
 }
 
+/** 後端網址：分開部署時由 VITE_API_BASE 指定（例如 https://xxx.onrender.com），未設定則用同網域 */
+const API_BASE = `${(import.meta.env.VITE_API_BASE ?? '').replace(/\/+$/, '')}/api`
+
 /** 後端 REST API 用戶端 */
 export class PurpleApi {
-  constructor(private readonly baseUrl = '/api') {}
+  constructor(private readonly baseUrl = API_BASE) {}
 
   async getStatus(): Promise<PurpleStatus> {
     return PurpleStatus.fromDto(await this.request<StatusDto>('/status'))
