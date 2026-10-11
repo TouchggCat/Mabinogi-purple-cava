@@ -82,6 +82,16 @@ describe('PurpleService', () => {
 })
 
 describe('shared rules', () => {
+  it('keeps an ended spawn as recent for 12 hours, then rotates', () => {
+    const anchor = tw('2026-10-07T14:40:00') // 14:55 結束
+    expect(spawnsAround(anchor, tw('2026-10-08T02:54:59')))
+      .toEqual({ recent: anchor, next: tw('2026-10-09T02:55:00') })
+    expect(spawnsAround(anchor, tw('2026-10-08T02:55:00')))
+      .toEqual({ recent: tw('2026-10-09T02:55:00'), next: tw('2026-10-10T15:10:00') })
+    // 多輪之後
+    expect(spawnsAround(anchor, tw('2026-10-11T20:00:00')).recent).toEqual(tw('2026-10-12T03:25:00'))
+  })
+
   it('Mon 12:00 → Wed 00:15', () => {
     expect(spawnsAround(tw('2026-10-05T12:00:00'), tw('2026-10-05T13:00:00')).next).toEqual(tw('2026-10-07T00:15:00'))
   })

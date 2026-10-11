@@ -1,4 +1,5 @@
 import type { StatusDto } from '@shared/dto'
+import { displayedUntil } from '@shared/rules'
 import { Maintenance } from './Maintenance'
 import { SpawnSpan } from './SpawnSpan'
 
@@ -35,8 +36,8 @@ export class PurpleStatus {
     return this.isCalibrated && this.needsCalibration
   }
 
-  /** 本地時鐘已跨過下一場 → 需要重新取得 */
+  /** 本地時鐘已跨過輪換時間（最近那場結束 + 12 小時）→ 需要重新取得 */
   isOutdated(now: Date): boolean {
-    return this.next?.hasStarted(now) ?? false
+    return this.recent !== null && now >= displayedUntil(this.recent.start)
   }
 }

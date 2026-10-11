@@ -9,6 +9,8 @@ export const PURPLE = {
   CYCLE_MS: (36 * 60 + 15) * 60_000,
   /** 每場開放 15 分鐘 */
   OPEN_MS: 15 * 60_000,
+  /** 結束後仍顯示為「最近紫洞時間」的時間；超過就輪換到下一場 */
+  ENDED_HOLD_MS: 12 * 3600_000,
   /** 校正可接受範圍：現在 ±3 天 */
   CALIBRATION_WINDOW_DAYS: 3,
   /** 校正人員名稱上限 */
@@ -29,11 +31,19 @@ export function closingOf(start: Date): Date {
   return new Date(start.getTime() + PURPLE.OPEN_MS)
 }
 
+/** 這一場在「最近紫洞時間」顯示到何時：結束 + 12 小時 */
+export function displayedUntil(start: Date): Date {
+  return new Date(closingOf(start).getTime() + PURPLE.ENDED_HOLD_MS)
+}
+
 /**
- * 由校正的開啟時間推算：最近一場（<= now 的最後一場；anchor 在未來時即 anchor 本身）與下一場。
+ * 由校正的開啟時間推算畫面上的「最近紫洞時間」與「下一次預計」。
+ * 最近 = anchor 往後推、結束未滿 12 小時的第一場（可能尚未開始、開放中或剛結束）；下一次 = 最近 + 36 小時 15 分。
  */
 export function spawnsAround(anchor: Date, now: Date): { recent: Date; next: Date } {
-  const k = Math.max(0, Math.floor((now.getTime() - anchor.getTime()) / PURPLE.CYCLE_MS))
+  // 已「過期」（結束超過 12 小時）的場次數
+  const passed = now.getTime() - displayedUntil(anchor).getTime()
+  const k = passed < 0 ? 0 : Math.floor(passed / PURPLE.CYCLE_MS) + 1
   const recent = new Date(anchor.getTime() + k * PURPLE.CYCLE_MS)
   return { recent, next: new Date(recent.getTime() + PURPLE.CYCLE_MS) }
 }

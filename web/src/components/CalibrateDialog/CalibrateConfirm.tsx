@@ -14,10 +14,11 @@ export function CalibrateConfirm({ preview, busy, error, onBack, onConfirm }: Pr
   return (
     <div>
       <h2>確定要校正嗎？</h2>
-      <p>最近紫洞時間將設為</p>
+      <p>紫洞開啟時間將設為</p>
       <p className="confirm-time">{TaipeiClock.monthDayTime(preview.spawn)}</p>
       <p className="muted">
-        下一次預計 {TaipeiClock.monthDayTime(preview.next)}
+        最近紫洞時間 {TaipeiClock.monthDayTime(preview.recent)}
+        <br />下一次預計 {TaipeiClock.monthDayTime(preview.next)}
         <br />校正人員：{preview.by}
         <br />目前的時間記錄會被覆蓋。
       </p>

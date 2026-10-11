@@ -48,9 +48,11 @@ describe('SpawnSpan', () => {
 describe('CalibrationDraft', () => {
   const now = tw('2026-10-11T20:00:00')
 
-  it('previews the next spawn after now', () => {
+  it('previews what the page will show (rotates 12h after a spawn ends)', () => {
     const r = new CalibrationDraft('2026-10-09', '02:55', ' 阿紫 ').validate(now)
-    expect(r).toEqual({ ok: true, preview: { spawn: tw('2026-10-09T02:55:00'), next: tw('2026-10-12T03:25:00'), by: '阿紫' } })
+    expect(r).toEqual({ ok: true, preview: {
+      spawn: tw('2026-10-09T02:55:00'), recent: tw('2026-10-12T03:25:00'), next: tw('2026-10-13T15:40:00'), by: '阿紫',
+    } })
   })
 
   it('accepts a future time as the recent spawn', () => {
@@ -98,8 +100,9 @@ describe('PurpleStatus', () => {
     const s = PurpleStatus.fromDto(dto)
     expect(s.isCalibrated).toBe(true)
     expect(s.isDisruptedByMaintenance).toBe(true)
-    expect(s.isOutdated(tw('2026-10-09T02:54:00'))).toBe(false)
-    expect(s.isOutdated(tw('2026-10-09T02:55:00'))).toBe(true)
+    // 14:40 場次 14:55 結束，再 12 小時（10/08 02:55）輪換
+    expect(s.isOutdated(tw('2026-10-08T02:54:59'))).toBe(false)
+    expect(s.isOutdated(tw('2026-10-08T02:55:00'))).toBe(true)
   })
 
   it('is not disrupted before the first calibration', () => {

@@ -4,9 +4,11 @@ import type { CalibrateRequestDto } from '@shared/dto'
 import { CalibrationTime, checkCalibration, spawnsAround } from '@shared/rules'
 
 export interface CalibrationPreview {
-  /** 將設為「最近紫洞時間」的開啟時間 */
+  /** 校正的紫洞開啟時間 */
   spawn: Date
-  /** 由 spawn 往後推算、晚於現在的下一場 */
+  /** 校正後畫面上的「最近紫洞時間」（spawn 結束超過 12 小時就會是之後的場次） */
+  recent: Date
+  /** 校正後畫面上的「下一次預計」 */
   next: Date
   by: string
 }
@@ -45,8 +47,8 @@ export class CalibrationDraft {
   validate(now: Date): CalibrationResult {
     const check = checkCalibration(this.date, this.time, this.by, now)
     if (!check.ok) return check
-    const { next } = spawnsAround(check.spawn, now)
-    return { ok: true, preview: { spawn: check.spawn, next, by: check.by } }
+    const { recent, next } = spawnsAround(check.spawn, now)
+    return { ok: true, preview: { spawn: check.spawn, recent, next, by: check.by } }
   }
 
   toRequest(): CalibrateRequestDto {
