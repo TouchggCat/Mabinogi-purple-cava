@@ -23,7 +23,7 @@ export function SpawnSlot({ label, span, now, showCountdown = false }: Props) {
         <CopyButton text={text} label={`複製${label}`} />
       </div>
       {open && <div className="badge badge-open">開放中・剩 {Duration.between(now, span.end).toString()}</div>}
-      {showCountdown && !open && <div className="slot-sub">還有 {Duration.between(now, span.start).toString()}</div>}
+      {showCountdown && !open && <div className="badge badge-next">還有 {Duration.between(now, span.start).toString()}</div>}
     </div>
   )
 }
