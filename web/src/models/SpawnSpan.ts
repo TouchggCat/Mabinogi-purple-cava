@@ -28,6 +28,11 @@ export class SpawnSpan {
     return this.hasStarted(now) && now < this.end
   }
 
+  /** 尚未開始，且距離開啟 6 小時以內 */
+  isSoon(now: Date): boolean {
+    return !this.hasStarted(now) && this.start.getTime() - now.getTime() <= PURPLE.SOON_MS
+  }
+
   /** 尚未開始／開放中／已結束 */
   phase(now: Date): SpawnPhase {
     if (!this.hasStarted(now)) return 'upcoming'

@@ -8,7 +8,7 @@ interface Props {
   now: Date
 }
 
-/** 狀態標籤：尚未開始（綠）→ 開放中（紫）→ 已結束（灰） */
+/** 狀態標籤：尚未開始（綠；6 小時內橘）→ 開放中（紫）→ 已結束（灰） */
 function phaseBadge(phase: SpawnPhase, span: SpawnSpan, now: Date): string {
   switch (phase) {
     case 'upcoming': return `還有 ${Duration.between(now, span.start)}`
@@ -29,7 +29,7 @@ export function SpawnSlot({ label, span, now }: Props) {
         <div className="slot-time">{text}</div>
         <CopyButton text={text} label={`複製${label}`} />
       </div>
-      <div className={`badge badge-${phase}`}>{phaseBadge(phase, span, now)}</div>
+      <div className={`badge badge-${phase}${span.isSoon(now) ? ' badge-soon' : ''}`}>{phaseBadge(phase, span, now)}</div>
     </div>
   )
 }

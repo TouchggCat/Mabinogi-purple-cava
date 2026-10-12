@@ -13,6 +13,8 @@
   --link: #1a66d2;
   --next: #0e8a6a;
   --next-ink: #ffffff;
+  --soon: #e8590c;
+  --soon-ink: #ffffff;
   --ended: #e6e1ee;
   --ended-ink: #5d536f;
   --highlight: #17bf4c;
@@ -37,6 +39,8 @@
     --link: #74b4ff;
     --next: #4fd1a8;
     --next-ink: #0f2a22;
+    --soon: #ff8a3d;
+    --soon-ink: #2a1300;
     --ended: #2f2640;
     --ended-ink: #b9aecb;
     --highlight: #6cf7a0;
@@ -96,6 +100,7 @@ header p { margin: 0.3rem 0 1.5rem; }
 .badge-open, .badge-upcoming, .badge-ended { margin: 0.4rem 0 0; font-variant-numeric: tabular-nums; }
 .badge-open { background: var(--accent); color: var(--accent-ink); }
 .badge-upcoming { background: var(--next); color: var(--next-ink); }
+.badge-soon { background: var(--soon); color: var(--soon-ink); font-weight: 700; }
 .badge-ended { background: var(--ended); color: var(--ended-ink); }
 .badge-warn { background: var(--warn-bg); color: var(--warn); }
 
