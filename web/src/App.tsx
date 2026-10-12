@@ -62,7 +62,7 @@ export default function App() {
       )}
 
       <footer className="muted small site-updated">
-        網站更新日期：{TaipeiClock.dateInput(__BUILD_TIME__).replaceAll('-', '/')}
+        版本日期：{TaipeiClock.dateInput(__BUILD_TIME__).replaceAll('-', '/')}
       </footer>
     </main>
   )

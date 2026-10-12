@@ -45,7 +45,7 @@ function localApi(): Plugin {
 
 export default defineConfig({
   plugins: [react(), localApi()],
-  // 建置時間：每次推送後 Vercel 重新建置即更新，顯示為「網站更新日期」
+  // 建置時間：每次推送後 Vercel 重新建置即更新，顯示為「版本日期」
   define: { __BUILD_TIME__: JSON.stringify(new Date().toISOString()) },
   resolve: {
     alias: {
