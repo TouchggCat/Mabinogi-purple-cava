@@ -16,6 +16,15 @@ export interface MaintenanceDto {
   extended: boolean
 }
 
+/** 一筆校正紀錄 */
+export interface CalibrationDto {
+  /** 校正的紫洞開啟時間 */
+  anchor: string
+  /** 校正操作時間 */
+  calibrated_at: string
+  by: string
+}
+
 export interface StatusDto {
   now: string
   anchor: string | null
@@ -24,6 +33,8 @@ export interface StatusDto {
   recent: SpanDto | null
   next: SpanDto | null
   needs_calibration: boolean
+  /** 最近幾次校正，新到舊 */
+  calibration_history: CalibrationDto[]
   maintenance: MaintenanceDto | null
   last_crawl: string | null
   /** 最近幾次官網公告檢查時間，新到舊 */

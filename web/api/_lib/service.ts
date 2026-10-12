@@ -1,12 +1,14 @@
-import type { MaintenanceDto, MaintenancePostDto, StatusDto } from '../../shared/dto.js'
+import type { CalibrationDto, MaintenanceDto, MaintenancePostDto, StatusDto } from '../../shared/dto.js'
 import { CalibrationTime, checkCalibration, closingOf, spawnsAround } from '../../shared/rules.js'
 import { HttpError } from './http.js'
-import { createStore, type PurpleStore } from './store.js'
+import { createStore, type Calibration, type PurpleStore } from './store.js'
 
 /** 保留的維護公告數量（依時間新到舊） */
 const MAINTENANCE_KEEP = 20
 /** 保留的官網公告檢查紀錄筆數 */
 const CRAWL_HISTORY_KEEP = 3
+/** 保留的校正紀錄筆數 */
+const CALIBRATION_HISTORY_KEEP = 5
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 const isStr = (v: unknown): v is string => typeof v === 'string'
@@ -28,6 +30,8 @@ function toMaintenanceDto(m: MaintenancePostDto): MaintenanceDto {
   return { title, url, type, start, end, original_end, posted_at, extended }
 }
 
+const toCalibrationDto = (c: Calibration): CalibrationDto => ({ anchor: c.anchor, calibrated_at: c.calibratedAt, by: c.by })
+
 const span = (start: Date) => ({ start: start.toISOString(), end: closingOf(start).toISOString() })
 
 /** API 的業務邏輯；儲存、時鐘、密鑰皆可注入以便測試 */
@@ -40,7 +44,8 @@ export class PurpleService {
 
   async status(): Promise<StatusDto> {
     const now = this.clock()
-    const { calibration, maintenance, crawls } = await this.store.snapshot()
+    const { calibrations, maintenance, crawls } = await this.store.snapshot()
+    const calibration = calibrations[0]
     const latest = [...maintenance].sort((a, b) => occurredAt(b) - occurredAt(a))[0] ?? null
 
     let recent = null
@@ -63,6 +68,7 @@ export class PurpleService {
       recent,
       next,
       needs_calibration: needsCalibration,
+      calibration_history: calibrations.map(toCalibrationDto),
       maintenance: latest && toMaintenanceDto(latest),
       last_crawl: crawls[0] ?? null,
       crawl_history: crawls,
@@ -76,7 +82,9 @@ export class PurpleService {
     if (!parts) throw new HttpError(400, '時間格式錯誤')
     const check = checkCalibration(parts[0], parts[1], by, now)
     if (!check.ok) throw new HttpError(400, check.error)
-    await this.store.saveCalibration({ anchor: check.spawn.toISOString(), calibratedAt: now.toISOString(), by: check.by })
+    const { calibrations } = await this.store.snapshot()
+    const latest = { anchor: check.spawn.toISOString(), calibratedAt: now.toISOString(), by: check.by }
+    await this.store.saveCalibrations([latest, ...calibrations].slice(0, CALIBRATION_HISTORY_KEEP))
     return this.status()
   }
 

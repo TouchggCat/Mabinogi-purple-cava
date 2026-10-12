@@ -9,7 +9,8 @@ export interface Calibration {
 }
 
 export interface Snapshot {
-  calibration: Calibration | null
+  /** 校正紀錄，新到舊；第一筆為目前使用的校正 */
+  calibrations: Calibration[]
   maintenance: MaintenancePostDto[]
   /** 官網公告檢查時間 (ISO)，新到舊 */
   crawls: string[]
@@ -18,11 +19,13 @@ export interface Snapshot {
 /** 資料存取介面：正式環境用 Upstash Redis，本機開發與測試用記憶體 */
 export interface PurpleStore {
   snapshot(): Promise<Snapshot>
-  saveCalibration(c: Calibration): Promise<void>
+  saveCalibrations(calibrations: Calibration[]): Promise<void>
   saveMaintenance(posts: MaintenancePostDto[], crawls: string[]): Promise<void>
 }
 
 const KEYS = {
+  calibrations: 'purple:calibrations',
+  /** 舊版只存一筆校正；尚未有 calibrations 時沿用 */
   calibration: 'purple:calibration',
   maintenance: 'purple:maintenance',
   crawls: 'purple:crawls',
@@ -33,14 +36,14 @@ const KEYS = {
 const parse = <T>(raw: string | null): T | null => (raw ? (JSON.parse(raw) as T) : null)
 
 export class MemoryStore implements PurpleStore {
-  private data: Snapshot = { calibration: null, maintenance: [], crawls: [] }
+  private data: Snapshot = { calibrations: [], maintenance: [], crawls: [] }
 
   async snapshot(): Promise<Snapshot> {
     return structuredClone(this.data)
   }
 
-  async saveCalibration(c: Calibration): Promise<void> {
-    this.data.calibration = { ...c }
+  async saveCalibrations(calibrations: Calibration[]): Promise<void> {
+    this.data.calibrations = structuredClone(calibrations)
   }
 
   async saveMaintenance(posts: MaintenancePostDto[], crawls: string[]): Promise<void> {
@@ -65,18 +68,19 @@ export class RedisStore implements PurpleStore {
   }
 
   async snapshot(): Promise<Snapshot> {
-    const [cal, maint, crawls, last] = await this.command<(string | null)[]>(
-      'MGET', KEYS.calibration, KEYS.maintenance, KEYS.crawls, KEYS.lastCrawl,
+    const [cals, cal, maint, crawls, last] = await this.command<(string | null)[]>(
+      'MGET', KEYS.calibrations, KEYS.calibration, KEYS.maintenance, KEYS.crawls, KEYS.lastCrawl,
     )
+    const legacy = parse<Calibration>(cal)
     return {
-      calibration: parse<Calibration>(cal),
+      calibrations: parse<Calibration[]>(cals) ?? (legacy ? [legacy] : []),
       maintenance: parse<MaintenancePostDto[]>(maint) ?? [],
       crawls: parse<string[]>(crawls) ?? (last ? [last] : []),
     }
   }
 
-  async saveCalibration(c: Calibration): Promise<void> {
-    await this.command('SET', KEYS.calibration, JSON.stringify(c))
+  async saveCalibrations(calibrations: Calibration[]): Promise<void> {
+    await this.command('SET', KEYS.calibrations, JSON.stringify(calibrations))
   }
 
   async saveMaintenance(posts: MaintenancePostDto[], crawls: string[]): Promise<void> {

@@ -1,5 +1,6 @@
+export { CalibrationRecord } from './CalibrationRecord'
 export { CalibrationDraft, type CalibrationPreview, type CalibrationResult } from './CalibrationDraft'
-export type { CalibrateRequestDto, ErrorDto, MaintenanceDto, SpanDto, StatusDto } from '@shared/dto'
+export type { CalibrateRequestDto, CalibrationDto, ErrorDto, MaintenanceDto, SpanDto, StatusDto } from '@shared/dto'
 export { Maintenance } from './Maintenance'
 export { PurpleStatus } from './PurpleStatus'
 export { SpawnSpan, type SpawnPhase } from './SpawnSpan'

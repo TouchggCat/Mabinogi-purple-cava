@@ -74,6 +74,13 @@ describe('PurpleService', () => {
     expect(s.crawl_history).toEqual([clock.toISOString(), clock.toISOString()])
   })
 
+  it('keeps the last 5 calibrations, newest first', async () => {
+    for (let i = 1; i <= 6; i++) await service.calibrate({ time: '2026-10-07 19:00', by: `p${i}` })
+    const s = await service.status()
+    expect(s.calibration_history.map((c) => c.by)).toEqual(['p6', 'p5', 'p4', 'p3', 'p2'])
+    expect(s.calibrated_by).toBe('p6')
+  })
+
   it('keeps the last 3 crawl times, newest first', async () => {
     const times = ['2026-10-07T20:00:00', '2026-10-07T21:00:00', '2026-10-07T22:00:00', '2026-10-07T23:00:00'].map(tw)
     for (const t of times) { clock = t; await upload([]) }
@@ -125,20 +132,23 @@ describe('http / store', () => {
     const calls: unknown[] = []
     vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
       calls.push(JSON.parse(init.body as string))
-      return Response.json({ result: calls.length === 1 ? 'OK' : ['{"anchor":"a","calibratedAt":"b","by":"c"}', null, null, null] })
+      return Response.json({ result: calls.length === 1 ? 'OK' : ['[{"anchor":"a","calibratedAt":"b","by":"c"}]', null, null, null, null] })
     })
     const store = new RedisStore('https://r', 't')
-    await store.saveCalibration({ anchor: 'a', calibratedAt: 'b', by: 'c' })
-    expect(await store.snapshot()).toEqual({ calibration: { anchor: 'a', calibratedAt: 'b', by: 'c' }, maintenance: [], crawls: [] })
+    await store.saveCalibrations([{ anchor: 'a', calibratedAt: 'b', by: 'c' }])
+    expect(await store.snapshot()).toEqual({ calibrations: [{ anchor: 'a', calibratedAt: 'b', by: 'c' }], maintenance: [], crawls: [] })
     expect(calls).toEqual([
-      ['SET', 'purple:calibration', '{"anchor":"a","calibratedAt":"b","by":"c"}'],
-      ['MGET', 'purple:calibration', 'purple:maintenance', 'purple:crawls', 'purple:last_crawl'],
+      ['SET', 'purple:calibrations', '[{"anchor":"a","calibratedAt":"b","by":"c"}]'],
+      ['MGET', 'purple:calibrations', 'purple:calibration', 'purple:maintenance', 'purple:crawls', 'purple:last_crawl'],
     ])
   })
 
-  it('falls back to the legacy last_crawl key', async () => {
-    vi.stubGlobal('fetch', async () => Response.json({ result: [null, null, null, '2026-10-12T00:29:54Z'] }))
-    expect((await new RedisStore('https://r', 't').snapshot()).crawls).toEqual(['2026-10-12T00:29:54Z'])
+  it('falls back to the legacy single-value keys', async () => {
+    vi.stubGlobal('fetch', async () => Response.json({ result: [null, '{"anchor":"a","calibratedAt":"b","by":"c"}', null, null, '2026-10-12T00:29:54Z'] }))
+    expect(await new RedisStore('https://r', 't').snapshot()).toMatchObject({
+      calibrations: [{ anchor: 'a', calibratedAt: 'b', by: 'c' }],
+      crawls: ['2026-10-12T00:29:54Z'],
+    })
   })
 
   it('picks the store from env', () => {

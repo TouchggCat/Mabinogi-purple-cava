@@ -1,5 +1,6 @@
 import type { StatusDto } from '@shared/dto'
 import { displayedUntil } from '@shared/rules'
+import { CalibrationRecord } from './CalibrationRecord'
 import { Maintenance } from './Maintenance'
 import { SpawnSpan } from './SpawnSpan'
 
@@ -11,6 +12,8 @@ export class PurpleStatus {
     readonly calibratedAt: Date | null,
     readonly calibratedBy: string | null,
     readonly needsCalibration: boolean,
+    /** 最近幾次校正，新到舊 */
+    readonly calibrationHistory: CalibrationRecord[],
     readonly maintenance: Maintenance | null,
     /** 最近幾次官網公告檢查時間，新到舊 */
     readonly crawlHistory: Date[],
@@ -23,6 +26,7 @@ export class PurpleStatus {
       dto.calibrated_at ? new Date(dto.calibrated_at) : null,
       dto.calibrated_by,
       dto.needs_calibration,
+      (dto.calibration_history ?? []).map(CalibrationRecord.fromDto),
       dto.maintenance && Maintenance.fromDto(dto.maintenance),
       (dto.crawl_history ?? (dto.last_crawl ? [dto.last_crawl] : [])).map((t) => new Date(t)),
     )

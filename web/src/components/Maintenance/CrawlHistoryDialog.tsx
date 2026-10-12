@@ -1,5 +1,4 @@
-import { Modal } from '@/components/common'
-import { Duration, TaipeiClock } from '@/utils'
+import { HistoryDialog } from '@/components/common'
 
 interface Props {
   history: Date[]
@@ -10,20 +9,12 @@ interface Props {
 /** 最近幾次官網公告檢查時間 */
 export function CrawlHistoryDialog({ history, now, onClose }: Props) {
   return (
-    <Modal onClose={onClose}>
-      <h2>官網公告檢查紀錄</h2>
-      <p className="muted">最近 {history.length} 次（時間不固定）</p>
-      <ul className="crawl-list">
-        {history.map((t) => (
-          <li key={t.toISOString()}>
-            <span>{TaipeiClock.monthDayTime(t)}</span>
-            <span className="muted">{Duration.between(t, now).toString()}前</span>
-          </li>
-        ))}
-      </ul>
-      <div className="actions">
-        <button className="btn" onClick={onClose}>關閉</button>
-      </div>
-    </Modal>
+    <HistoryDialog
+      title="官網公告檢查紀錄"
+      note={`最近 ${history.length} 次（時間不固定）`}
+      entries={history.map((at) => ({ at }))}
+      now={now}
+      onClose={onClose}
+    />
   )
 }

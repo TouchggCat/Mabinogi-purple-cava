@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalibrateDialog, CalibrationNotice, CrawlHistoryDialog, MaintenanceAlert, MaintenanceInfo, StatusCard } from '@/components'
+import { CalibrateDialog, CalibrationHistoryDialog, CalibrationNotice, CrawlHistoryDialog, MaintenanceAlert, MaintenanceInfo, StatusCard } from '@/components'
 import { useNow, usePurpleStatus } from '@/hooks'
 import { TaipeiClock } from '@/utils'
 
@@ -7,7 +7,7 @@ export default function App() {
   const now = useNow()
   const { status, error, replace } = usePurpleStatus(now)
   const [calibrating, setCalibrating] = useState(false)
-  const [showingCrawls, setShowingCrawls] = useState(false)
+  const [showing, setShowing] = useState<'calibrations' | 'crawls' | null>(null)
 
   return (
     <main className="page">
@@ -28,15 +28,17 @@ export default function App() {
           <button className="btn btn-wide" onClick={() => setCalibrating(true)}>校正紫洞時間</button>
           {status.calibratedAt && (
             <p className="muted small">
-              上次校正：{TaipeiClock.monthDayTime(status.calibratedAt)}
-              {status.calibratedBy && <><br />校正人員：{status.calibratedBy}</>}
+              <button className="text-btn" onClick={() => setShowing('calibrations')}>
+                上次校正：{TaipeiClock.monthDayTime(status.calibratedAt)}
+                {status.calibratedBy && <><br />校正人員：{status.calibratedBy}</>}
+              </button>
             </p>
           )}
 
           {status.maintenance && <MaintenanceInfo maintenance={status.maintenance} now={now} />}
           {status.lastCrawl && (
             <p className="muted small">
-              <button className="text-btn" onClick={() => setShowingCrawls(true)}>
+              <button className="text-btn" onClick={() => setShowing('crawls')}>
                 官網公告最後檢查：{TaipeiClock.monthDayTime(status.lastCrawl)}
               </button>
             </p>
@@ -44,8 +46,11 @@ export default function App() {
         </>
       )}
 
-      {showingCrawls && status && (
-        <CrawlHistoryDialog history={status.crawlHistory} now={now} onClose={() => setShowingCrawls(false)} />
+      {status && showing === 'calibrations' && (
+        <CalibrationHistoryDialog history={status.calibrationHistory} now={now} onClose={() => setShowing(null)} />
+      )}
+      {status && showing === 'crawls' && (
+        <CrawlHistoryDialog history={status.crawlHistory} now={now} onClose={() => setShowing(null)} />
       )}
 
       {calibrating && (
