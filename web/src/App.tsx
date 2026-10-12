@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CalibrateDialog, CalibrationHistoryDialog, CalibrationNotice, CrawlHistoryDialog, MaintenanceAlert, MaintenanceInfo, StatusCard } from '@/components'
 import { useNow, usePurpleStatus } from '@/hooks'
 import { TaipeiClock } from '@/utils'
+import version from './version.json'
 
 export default function App() {
   const now = useNow()
@@ -62,7 +63,7 @@ export default function App() {
       )}
 
       <footer className="muted small site-updated">
-        版本日期：{TaipeiClock.dateInput(__BUILD_TIME__).replaceAll('-', '/')}
+        版本日期：{version.date}_V{version.build}
       </footer>
     </main>
   )
