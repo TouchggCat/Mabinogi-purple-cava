@@ -11,7 +11,10 @@ export interface PurpleStatusState {
   replace: (status: PurpleStatus) => void
 }
 
-/** 定期輪詢紫洞狀態；本地時鐘跨過下一場時也會重新取得 */
+/**
+ * 定期輪詢紫洞狀態；本地時鐘跨過下一場時也會重新取得。
+ * 分頁在背景（切走、手機鎖螢幕）時暫停輪詢，回到畫面立即重新取得，以節省 API 用量。
+ */
 export function usePurpleStatus(now: Date): PurpleStatusState {
   const [status, setStatus] = useState<PurpleStatus | null>(null)
   const [error, setError] = useState('')
@@ -26,9 +29,21 @@ export function usePurpleStatus(now: Date): PurpleStatusState {
   }, [])
 
   useEffect(() => {
-    void reload()
-    const id = setInterval(() => void reload(), APP.POLL_MS)
-    return () => clearInterval(id)
+    let id: ReturnType<typeof setInterval> | undefined
+    const stop = () => clearInterval(id)
+    const start = () => {
+      stop()
+      void reload()
+      id = setInterval(() => void reload(), APP.POLL_MS)
+    }
+    const onVisibility = () => (document.hidden ? stop() : start())
+
+    if (!document.hidden) start()
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      stop()
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
   }, [reload])
 
   const outdated = status?.isOutdated(now) ?? false

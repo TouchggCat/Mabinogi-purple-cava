@@ -20,8 +20,8 @@ export const PURPLE = {
 } as const
 
 export const APP = {
-  /** 狀態輪詢間隔 */
-  POLL_MS: 60_000,
+  /** 狀態輪詢間隔（分頁在背景時暫停） */
+  POLL_MS: 3 * 60_000,
   /** 維護在此天數內 → 顯示「近期有維護紀錄」 */
   RECENT_MAINTENANCE_DAYS: 3,
 } as const
