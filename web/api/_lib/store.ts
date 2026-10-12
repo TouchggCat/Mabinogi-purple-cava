@@ -20,6 +20,8 @@ export interface Snapshot {
 export interface PurpleStore {
   snapshot(): Promise<Snapshot>
   saveCalibrations(calibrations: Calibration[]): Promise<void>
+  /** 取得校正冷卻鎖；冷卻中（上次取得後未滿 ms）回傳 false */
+  tryLockCalibration(now: Date, ms: number): Promise<boolean>
   saveMaintenance(posts: MaintenancePostDto[], crawls: string[]): Promise<void>
 }
 
@@ -31,6 +33,7 @@ const KEYS = {
   crawls: 'purple:crawls',
   /** 舊版只存最後一次檢查時間；尚未有 crawls 時沿用 */
   lastCrawl: 'purple:last_crawl',
+  calibrationLock: 'purple:calibration_lock',
 } as const
 
 const parse = <T>(raw: string | null): T | null => (raw ? (JSON.parse(raw) as T) : null)
@@ -44,6 +47,14 @@ export class MemoryStore implements PurpleStore {
 
   async saveCalibrations(calibrations: Calibration[]): Promise<void> {
     this.data.calibrations = structuredClone(calibrations)
+  }
+
+  private calibrationLockedUntil = 0
+
+  async tryLockCalibration(now: Date, ms: number): Promise<boolean> {
+    if (now.getTime() < this.calibrationLockedUntil) return false
+    this.calibrationLockedUntil = now.getTime() + ms
+    return true
   }
 
   async saveMaintenance(posts: MaintenancePostDto[], crawls: string[]): Promise<void> {
@@ -81,6 +92,11 @@ export class RedisStore implements PurpleStore {
 
   async saveCalibrations(calibrations: Calibration[]): Promise<void> {
     await this.command('SET', KEYS.calibrations, JSON.stringify(calibrations))
+  }
+
+  /** SET NX PX：同時送出的請求也只有一個能拿到鎖，到期由 Redis 自動刪除 */
+  async tryLockCalibration(now: Date, ms: number): Promise<boolean> {
+    return (await this.command<string | null>('SET', KEYS.calibrationLock, now.toISOString(), 'NX', 'PX', String(ms))) === 'OK'
   }
 
   async saveMaintenance(posts: MaintenancePostDto[], crawls: string[]): Promise<void> {

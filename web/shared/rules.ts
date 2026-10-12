@@ -15,6 +15,8 @@ export const PURPLE = {
   CALIBRATION_WINDOW_DAYS: 3,
   /** 校正人員名稱上限 */
   CALIBRATOR_MAX_LENGTH: 20,
+  /** 校正冷卻時間：全站每分鐘最多校正一次 */
+  CALIBRATION_COOLDOWN_MS: 60_000,
 } as const
 
 export const APP = {

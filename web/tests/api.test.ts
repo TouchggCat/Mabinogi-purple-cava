@@ -74,8 +74,22 @@ describe('PurpleService', () => {
     expect(s.crawl_history).toEqual([clock.toISOString(), clock.toISOString()])
   })
 
+  it('allows one calibration per minute', async () => {
+    await service.calibrate({ time: '2026-10-07 19:00', by: 'a' })
+    clock = new Date(clock.getTime() + 59_999)
+    await expect(service.calibrate({ time: '2026-10-07 19:00', by: 'b' }))
+      .rejects.toMatchObject({ status: 429, message: '更新時間過於密集，請稍後再試' })
+    // 格式錯誤不受冷卻影響，仍回 400
+    await expect(service.calibrate({ time: 'x', by: 'b' })).rejects.toMatchObject({ status: 400 })
+    clock = new Date(clock.getTime() + 1)
+    expect((await service.calibrate({ time: '2026-10-07 19:00', by: 'b' })).calibrated_by).toBe('b')
+  })
+
   it('keeps the last 5 calibrations, newest first', async () => {
-    for (let i = 1; i <= 6; i++) await service.calibrate({ time: '2026-10-07 19:00', by: `p${i}` })
+    for (let i = 1; i <= 6; i++) {
+      clock = new Date(clock.getTime() + 60_000)
+      await service.calibrate({ time: '2026-10-07 19:00', by: `p${i}` })
+    }
     const s = await service.status()
     expect(s.calibration_history.map((c) => c.by)).toEqual(['p6', 'p5', 'p4', 'p3', 'p2'])
     expect(s.calibrated_by).toBe('p6')
@@ -141,6 +155,19 @@ describe('http / store', () => {
       ['SET', 'purple:calibrations', '[{"anchor":"a","calibratedAt":"b","by":"c"}]'],
       ['MGET', 'purple:calibrations', 'purple:calibration', 'purple:maintenance', 'purple:crawls', 'purple:last_crawl'],
     ])
+  })
+
+  it('locks calibration with SET NX PX', async () => {
+    const calls: unknown[] = []
+    vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
+      calls.push(JSON.parse(init.body as string))
+      return Response.json({ result: calls.length === 1 ? 'OK' : null })
+    })
+    const store = new RedisStore('https://r', 't')
+    const now = new Date('2026-10-12T00:00:00Z')
+    expect(await store.tryLockCalibration(now, 60_000)).toBe(true)
+    expect(await store.tryLockCalibration(now, 60_000)).toBe(false)
+    expect(calls[0]).toEqual(['SET', 'purple:calibration_lock', now.toISOString(), 'NX', 'PX', '60000'])
   })
 
   it('falls back to the legacy single-value keys', async () => {

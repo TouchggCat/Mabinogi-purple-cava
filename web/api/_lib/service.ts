@@ -1,5 +1,5 @@
 import type { CalibrationDto, MaintenanceDto, MaintenancePostDto, StatusDto } from '../../shared/dto.js'
-import { CalibrationTime, checkCalibration, closingOf, spawnsAround } from '../../shared/rules.js'
+import { CalibrationTime, PURPLE, checkCalibration, closingOf, spawnsAround } from '../../shared/rules.js'
 import { HttpError } from './http.js'
 import { createStore, type Calibration, type PurpleStore } from './store.js'
 
@@ -82,6 +82,9 @@ export class PurpleService {
     if (!parts) throw new HttpError(400, '時間格式錯誤')
     const check = checkCalibration(parts[0], parts[1], by, now)
     if (!check.ok) throw new HttpError(400, check.error)
+    if (!(await this.store.tryLockCalibration(now, PURPLE.CALIBRATION_COOLDOWN_MS))) {
+      throw new HttpError(429, '更新時間過於密集，請稍後再試')
+    }
     const { calibrations } = await this.store.snapshot()
     const latest = { anchor: check.spawn.toISOString(), calibratedAt: now.toISOString(), by: check.by }
     await this.store.saveCalibrations([latest, ...calibrations].slice(0, CALIBRATION_HISTORY_KEEP))
