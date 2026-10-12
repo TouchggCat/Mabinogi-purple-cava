@@ -60,6 +60,10 @@ export default function App() {
           onCalibrated={(next) => { replace(next); setCalibrating(false) }}
         />
       )}
+
+      <footer className="muted small site-updated">
+        網站更新日期：{TaipeiClock.dateInput(__BUILD_TIME__).replaceAll('-', '/')}
+      </footer>
     </main>
   )
 }
