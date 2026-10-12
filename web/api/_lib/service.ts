@@ -5,6 +5,8 @@ import { createStore, type PurpleStore } from './store.js'
 
 /** 保留的維護公告數量（依時間新到舊） */
 const MAINTENANCE_KEEP = 20
+/** 保留的官網公告檢查紀錄筆數 */
+const CRAWL_HISTORY_KEEP = 3
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 const isStr = (v: unknown): v is string => typeof v === 'string'
@@ -38,7 +40,7 @@ export class PurpleService {
 
   async status(): Promise<StatusDto> {
     const now = this.clock()
-    const { calibration, maintenance, lastCrawl } = await this.store.snapshot()
+    const { calibration, maintenance, crawls } = await this.store.snapshot()
     const latest = [...maintenance].sort((a, b) => occurredAt(b) - occurredAt(a))[0] ?? null
 
     let recent = null
@@ -62,7 +64,8 @@ export class PurpleService {
       next,
       needs_calibration: needsCalibration,
       maintenance: latest && toMaintenanceDto(latest),
-      last_crawl: lastCrawl,
+      last_crawl: crawls[0] ?? null,
+      crawl_history: crawls,
     }
   }
 
@@ -77,7 +80,7 @@ export class PurpleService {
     return this.status()
   }
 
-  /** 爬蟲上傳：與既有公告依 post_id 合併，保留最新 MAINTENANCE_KEEP 則 */
+  /** 爬蟲上傳：與既有公告依 post_id 合併，保留最新 MAINTENANCE_KEEP 則；檢查時間保留最近 CRAWL_HISTORY_KEEP 次 */
   async ingestMaintenance(body: unknown, authorization: string | null): Promise<{ ok: true; stored: number }> {
     if (!this.crawlToken) throw new HttpError(503, '伺服器未設定 CRAWL_TOKEN')
     if (authorization !== `Bearer ${this.crawlToken}`) throw new HttpError(401, '未授權')
@@ -85,11 +88,11 @@ export class PurpleService {
       throw new HttpError(400, '維護資料格式錯誤')
     }
 
-    const { maintenance } = await this.store.snapshot()
+    const { maintenance, crawls } = await this.store.snapshot()
     const byId = new Map(maintenance.map((m) => [m.post_id, m]))
     for (const p of body.posts) byId.set(p.post_id, p)
     const merged = [...byId.values()].sort((a, b) => occurredAt(b) - occurredAt(a)).slice(0, MAINTENANCE_KEEP)
-    await this.store.saveMaintenance(merged, body.crawled_at)
+    await this.store.saveMaintenance(merged, [body.crawled_at, ...crawls].slice(0, CRAWL_HISTORY_KEEP))
     return { ok: true, stored: merged.length }
   }
 }

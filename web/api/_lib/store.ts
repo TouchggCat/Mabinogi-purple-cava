@@ -11,26 +11,29 @@ export interface Calibration {
 export interface Snapshot {
   calibration: Calibration | null
   maintenance: MaintenancePostDto[]
-  lastCrawl: string | null
+  /** 官網公告檢查時間 (ISO)，新到舊 */
+  crawls: string[]
 }
 
 /** 資料存取介面：正式環境用 Upstash Redis，本機開發與測試用記憶體 */
 export interface PurpleStore {
   snapshot(): Promise<Snapshot>
   saveCalibration(c: Calibration): Promise<void>
-  saveMaintenance(posts: MaintenancePostDto[], crawledAt: string): Promise<void>
+  saveMaintenance(posts: MaintenancePostDto[], crawls: string[]): Promise<void>
 }
 
 const KEYS = {
   calibration: 'purple:calibration',
   maintenance: 'purple:maintenance',
+  crawls: 'purple:crawls',
+  /** 舊版只存最後一次檢查時間；尚未有 crawls 時沿用 */
   lastCrawl: 'purple:last_crawl',
 } as const
 
 const parse = <T>(raw: string | null): T | null => (raw ? (JSON.parse(raw) as T) : null)
 
 export class MemoryStore implements PurpleStore {
-  private data: Snapshot = { calibration: null, maintenance: [], lastCrawl: null }
+  private data: Snapshot = { calibration: null, maintenance: [], crawls: [] }
 
   async snapshot(): Promise<Snapshot> {
     return structuredClone(this.data)
@@ -40,9 +43,9 @@ export class MemoryStore implements PurpleStore {
     this.data.calibration = { ...c }
   }
 
-  async saveMaintenance(posts: MaintenancePostDto[], crawledAt: string): Promise<void> {
+  async saveMaintenance(posts: MaintenancePostDto[], crawls: string[]): Promise<void> {
     this.data.maintenance = structuredClone(posts)
-    this.data.lastCrawl = crawledAt
+    this.data.crawls = [...crawls]
   }
 }
 
@@ -62,13 +65,13 @@ export class RedisStore implements PurpleStore {
   }
 
   async snapshot(): Promise<Snapshot> {
-    const [cal, maint, crawl] = await this.command<(string | null)[]>(
-      'MGET', KEYS.calibration, KEYS.maintenance, KEYS.lastCrawl,
+    const [cal, maint, crawls, last] = await this.command<(string | null)[]>(
+      'MGET', KEYS.calibration, KEYS.maintenance, KEYS.crawls, KEYS.lastCrawl,
     )
     return {
       calibration: parse<Calibration>(cal),
       maintenance: parse<MaintenancePostDto[]>(maint) ?? [],
-      lastCrawl: crawl,
+      crawls: parse<string[]>(crawls) ?? (last ? [last] : []),
     }
   }
 
@@ -76,8 +79,8 @@ export class RedisStore implements PurpleStore {
     await this.command('SET', KEYS.calibration, JSON.stringify(c))
   }
 
-  async saveMaintenance(posts: MaintenancePostDto[], crawledAt: string): Promise<void> {
-    await this.command('MSET', KEYS.maintenance, JSON.stringify(posts), KEYS.lastCrawl, crawledAt)
+  async saveMaintenance(posts: MaintenancePostDto[], crawls: string[]): Promise<void> {
+    await this.command('MSET', KEYS.maintenance, JSON.stringify(posts), KEYS.crawls, JSON.stringify(crawls))
   }
 }
 

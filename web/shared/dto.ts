@@ -26,6 +26,8 @@ export interface StatusDto {
   needs_calibration: boolean
   maintenance: MaintenanceDto | null
   last_crawl: string | null
+  /** 最近幾次官網公告檢查時間，新到舊 */
+  crawl_history: string[]
 }
 
 export interface CalibrateRequestDto {

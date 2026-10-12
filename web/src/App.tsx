@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { CalibrateDialog, CalibrationNotice, MaintenanceAlert, MaintenanceInfo, StatusCard } from '@/components'
-import { APP } from '@/config'
+import { CalibrateDialog, CalibrationNotice, CrawlHistoryDialog, MaintenanceAlert, MaintenanceInfo, StatusCard } from '@/components'
 import { useNow, usePurpleStatus } from '@/hooks'
 import { TaipeiClock } from '@/utils'
 
@@ -8,6 +7,7 @@ export default function App() {
   const now = useNow()
   const { status, error, replace } = usePurpleStatus(now)
   const [calibrating, setCalibrating] = useState(false)
+  const [showingCrawls, setShowingCrawls] = useState(false)
 
   return (
     <main className="page">
@@ -36,10 +36,16 @@ export default function App() {
           {status.maintenance && <MaintenanceInfo maintenance={status.maintenance} now={now} />}
           {status.lastCrawl && (
             <p className="muted small">
-              官網公告最後檢查：{TaipeiClock.monthDayTime(status.lastCrawl)}（每 {APP.CRAWL_INTERVAL_MIN} 分鐘）
+              <button className="text-btn" onClick={() => setShowingCrawls(true)}>
+                官網公告最後檢查：{TaipeiClock.monthDayTime(status.lastCrawl)}
+              </button>
             </p>
           )}
         </>
+      )}
+
+      {showingCrawls && status && (
+        <CrawlHistoryDialog history={status.crawlHistory} now={now} onClose={() => setShowingCrawls(false)} />
       )}
 
       {calibrating && (

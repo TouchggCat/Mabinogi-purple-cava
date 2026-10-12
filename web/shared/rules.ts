@@ -20,8 +20,6 @@ export const PURPLE = {
 export const APP = {
   /** 狀態輪詢間隔 */
   POLL_MS: 60_000,
-  /** 官網公告爬取間隔（GitHub Actions 排程，僅顯示用） */
-  CRAWL_INTERVAL_MIN: 30,
   /** 維護在此天數內 → 顯示「近期有維護紀錄」 */
   RECENT_MAINTENANCE_DAYS: 3,
 } as const

@@ -12,7 +12,8 @@ export class PurpleStatus {
     readonly calibratedBy: string | null,
     readonly needsCalibration: boolean,
     readonly maintenance: Maintenance | null,
-    readonly lastCrawl: Date | null,
+    /** 最近幾次官網公告檢查時間，新到舊 */
+    readonly crawlHistory: Date[],
   ) {}
 
   static fromDto(dto: StatusDto): PurpleStatus {
@@ -23,8 +24,12 @@ export class PurpleStatus {
       dto.calibrated_by,
       dto.needs_calibration,
       dto.maintenance && Maintenance.fromDto(dto.maintenance),
-      dto.last_crawl ? new Date(dto.last_crawl) : null,
+      (dto.crawl_history ?? (dto.last_crawl ? [dto.last_crawl] : [])).map((t) => new Date(t)),
     )
+  }
+
+  get lastCrawl(): Date | null {
+    return this.crawlHistory[0] ?? null
   }
 
   get isCalibrated(): boolean {
