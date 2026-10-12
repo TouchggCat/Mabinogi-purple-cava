@@ -12,7 +12,7 @@ export function CrawlHistoryDialog({ history, now, onClose }: Props) {
   return (
     <Modal onClose={onClose}>
       <h2>官網公告檢查紀錄</h2>
-      <p className="muted">最近 {history.length} 次（GitHub 排程，時間不固定）</p>
+      <p className="muted">最近 {history.length} 次（時間不固定）</p>
       <ul className="crawl-list">
         {history.map((t) => (
           <li key={t.toISOString()}>
