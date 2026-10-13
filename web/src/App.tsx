@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalibrateDialog, CalibrationHistoryDialog, CalibrationNotice, CrawlHistoryDialog, MaintenanceAlert, MaintenanceInfo, StatusCard } from '@/components'
+import { CalibrateDialog, CalibrationHistoryDialog, CalibrationNotice, CrawlHistoryDialog, MaintenanceAlert, MaintenanceInfo, PushToggle, StatusCard } from '@/components'
 import { useNow, usePurpleStatus } from '@/hooks'
 import { TaipeiClock } from '@/utils'
 import version from './version.json'
@@ -12,6 +12,7 @@ export default function App() {
 
   return (
     <main className="page">
+      <div className="topbar"><PushToggle /></div>
       <header>
         <h1>初音的瑪奇紫洞發布器</h1>
         <p className="muted">每 36 小時 15 分鐘刷新，開放 15 分鐘</p>

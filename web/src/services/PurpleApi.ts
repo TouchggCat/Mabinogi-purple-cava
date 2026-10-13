@@ -1,4 +1,4 @@
-import { PurpleStatus, type CalibrateRequestDto, type ErrorDto, type StatusDto } from '@/models'
+import { PurpleStatus, type CalibrateRequestDto, type ErrorDto, type PushConfigDto, type PushSubscriptionDto, type StatusDto } from '@/models'
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {
@@ -24,6 +24,22 @@ export class PurpleApi {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     }))
+  }
+
+  async pushConfig(): Promise<PushConfigDto> {
+    return this.request<PushConfigDto>('/push')
+  }
+
+  async subscribePush(sub: PushSubscriptionDto): Promise<void> {
+    await this.send('POST', '/push', sub)
+  }
+
+  async unsubscribePush(endpoint: string): Promise<void> {
+    await this.send('DELETE', '/push', { endpoint })
+  }
+
+  private send<T>(method: string, path: string, body: unknown): Promise<T> {
+    return this.request<T>(path, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
   }
 
   private async request<T>(path: string, init?: RequestInit): Promise<T> {

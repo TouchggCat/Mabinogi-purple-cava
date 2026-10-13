@@ -1,7 +1,7 @@
 import type { CalibrationDto, MaintenanceDto, MaintenancePostDto, StatusDto } from '../../shared/dto.js'
 import { CalibrationTime, PURPLE, checkCalibration, closingOf, spawnsAround } from '../../shared/rules.js'
 import { HttpError } from './http.js'
-import { createStore, type Calibration, type PurpleStore } from './store.js'
+import { getStore, type Calibration, type PurpleStore } from './store.js'
 
 /** 保留的維護公告數量（依時間新到舊） */
 const MAINTENANCE_KEEP = 20
@@ -112,6 +112,6 @@ let shared: PurpleService | null = null
 
 /** Functions 共用的單例（同一個執行個體內重複使用） */
 export function getService(): PurpleService {
-  shared ??= new PurpleService(createStore(), process.env.CRAWL_TOKEN)
+  shared ??= new PurpleService(getStore(), process.env.CRAWL_TOKEN)
   return shared
 }

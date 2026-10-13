@@ -52,7 +52,24 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); }
 
-.page { max-width: 34rem; margin: 0 auto; padding: 2.5rem 1rem 3rem; }
+.page { max-width: 34rem; margin: 0 auto; padding: 1rem 1rem 3rem; }
+.topbar { display: flex; justify-content: flex-end; min-height: 2.25rem; margin-bottom: 0.5rem; }
+.push-toggle {
+  display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.5rem 0.35rem 0.7rem;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--muted);
+  font: inherit; font-size: 0.85rem; cursor: pointer;
+}
+.push-toggle svg { width: 1.05rem; height: 1.05rem; }
+.push-toggle:hover, .push-toggle:focus-visible { border-color: var(--accent); }
+.push-switch { position: relative; width: 2rem; height: 1.15rem; border-radius: 999px; background: var(--ended); transition: background 0.2s; }
+.push-switch::after {
+  content: ''; position: absolute; top: 0.15rem; left: 0.15rem; width: 0.85rem; height: 0.85rem;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.3); transition: transform 0.2s;
+}
+.push-on { color: var(--accent); border-color: var(--accent); }
+.push-on .push-switch { background: var(--accent); }
+.push-on .push-switch::after { transform: translateX(0.85rem); }
+.steps { margin: 0.5rem 0 0; padding-left: 1.4rem; line-height: 1.8; }
 header h1 { margin: 0; font-size: 1.9rem; letter-spacing: 0.05em; color: var(--accent); }
 header p { margin: 0.3rem 0 1.5rem; }
 
@@ -124,7 +141,7 @@ header p { margin: 0.3rem 0 1.5rem; }
 .maint a:hover, .maint a:focus-visible { text-decoration: underline; }
 .maint p { margin: 0.4rem 0 0; font-variant-numeric: tabular-nums; }
 
-.overlay { position: fixed; inset: 0; background: rgb(0 0 0 / 0.45); display: grid; place-items: center; padding: 1rem; }
+.overlay { position: fixed; inset: 0; z-index: 100; background: rgb(0 0 0 / 0.45); display: grid; place-items: center; padding: 1rem; }
 .dialog { background: var(--card); border-radius: 1rem; padding: 1.5rem; width: 100%; max-width: 22rem; }
 .dialog h2 { margin: 0 0 0.5rem; font-size: 1.2rem; }
 .field { display: block; margin-top: 0.8rem; }

@@ -47,6 +47,19 @@ export interface CalibrateRequestDto {
   by: string
 }
 
+/** 瀏覽器推播訂閱（PushSubscription.toJSON()） */
+export interface PushSubscriptionDto {
+  endpoint: string
+  expirationTime?: number | null
+  keys: { p256dh: string; auth: string }
+}
+
+/** GET /api/push */
+export interface PushConfigDto {
+  /** VAPID 公鑰；未設定時為 null（推播停用） */
+  public_key: string | null
+}
+
 export interface ErrorDto {
   detail?: string
 }
