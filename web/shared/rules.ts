@@ -32,7 +32,7 @@ export const APP = {
 
 export const COMMENT = {
   NAME_MAX_LENGTH: 20,
-  CONTENT_MAX_LENGTH: 200,
+  CONTENT_MAX_LENGTH: 100,
   /** 只保留最近幾則，多的捨去 */
   KEEP: 30,
   /** 同一使用者（IP）每 5 分鐘最多留言一次 */

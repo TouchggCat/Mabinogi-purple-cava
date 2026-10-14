@@ -27,7 +27,7 @@ describe('CommentService', () => {
     [{ name: '', content: 'x' }, '請輸入名稱'],
     [{ name: 'a', content: '  ' }, '請輸入內容'],
     [{ name: 'a'.repeat(21), content: 'x' }, '名稱最多 20 字'],
-    [{ name: 'a', content: 'x'.repeat(201) }, '內容最多 200 字'],
+    [{ name: 'a', content: 'x'.repeat(101) }, '內容最多 100 字'],
     [null, '請輸入名稱'],
   ])('rejects %j', async (body, detail) => {
     await expect(comments.post(body, 'a')).rejects.toMatchObject({ status: 400, message: detail })
