@@ -30,6 +30,32 @@ export const APP = {
   RECENT_MAINTENANCE_DAYS: 3,
 } as const
 
+export const COMMENT = {
+  NAME_MAX_LENGTH: 20,
+  CONTENT_MAX_LENGTH: 200,
+  /** 只保留最近幾則，多的捨去 */
+  KEEP: 30,
+  /** 同一使用者（IP）每 5 分鐘最多留言一次 */
+  USER_COOLDOWN_MS: 5 * 60_000,
+  /** 全站每小時最多接受幾則 */
+  SITE_LIMIT_PER_HOUR: 10,
+} as const
+
+export type CommentCheck =
+  | { ok: true; name: string; content: string }
+  | { ok: false; error: string }
+
+/** 留言驗證：名稱、內容皆必填 */
+export function checkComment(name: string, content: string): CommentCheck {
+  const n = name.trim()
+  const c = content.trim()
+  if (!n) return { ok: false, error: '請輸入名稱' }
+  if (n.length > COMMENT.NAME_MAX_LENGTH) return { ok: false, error: `名稱最多 ${COMMENT.NAME_MAX_LENGTH} 字` }
+  if (!c) return { ok: false, error: '請輸入內容' }
+  if (c.length > COMMENT.CONTENT_MAX_LENGTH) return { ok: false, error: `內容最多 ${COMMENT.CONTENT_MAX_LENGTH} 字` }
+  return { ok: true, name: n, content: c }
+}
+
 /** 一場紫洞的關閉時間 */
 export function closingOf(start: Date): Date {
   return new Date(start.getTime() + PURPLE.OPEN_MS)

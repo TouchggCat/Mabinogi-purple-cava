@@ -1,1 +1,1 @@
-export { APP, PURPLE } from '@shared/rules'
+export { APP, COMMENT, PURPLE, checkComment } from '@shared/rules'

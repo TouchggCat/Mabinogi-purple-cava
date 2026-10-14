@@ -60,6 +60,19 @@ export interface PushConfigDto {
   public_key: string | null
 }
 
+/** 一則留言 */
+export interface CommentDto {
+  name: string
+  content: string
+  posted_at: string
+}
+
+/** POST /api/comments */
+export interface CommentRequestDto {
+  name: string
+  content: string
+}
+
 export interface ErrorDto {
   detail?: string
 }

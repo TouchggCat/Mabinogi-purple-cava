@@ -1,4 +1,4 @@
-import type { MaintenancePostDto, PushSubscriptionDto } from '../../shared/dto.js'
+import type { CommentDto, MaintenancePostDto, PushSubscriptionDto } from '../../shared/dto.js'
 
 export interface Calibration {
   /** 校正的紫洞開啟時間 (ISO) */
@@ -35,6 +35,12 @@ export interface PurpleStore {
   pushSubscriptions(): Promise<PushSubscriptionDto[]>
   pushLog(): Promise<PushLog | null>
   savePushLog(log: PushLog): Promise<void>
+  /** 留言，新到舊 */
+  comments(): Promise<CommentDto[]>
+  /** 新增留言，只保留最新 keep 則 */
+  addComment(comment: CommentDto, keep: number): Promise<void>
+  /** 取得某位留言者的冷卻鎖；冷卻中回傳 false */
+  tryLockCommenter(id: string, now: Date, ms: number): Promise<boolean>
 }
 
 const KEYS = {
@@ -49,6 +55,10 @@ const KEYS = {
   /** Hash：endpoint → 訂閱 JSON */
   pushSubscriptions: 'purple:push_subscriptions',
   pushLog: 'purple:push_log',
+  /** List：留言 JSON，新到舊 */
+  comments: 'purple:comments',
+  /** 後接留言者代號（IP 雜湊） */
+  commentLock: 'purple:comment_lock:',
 } as const
 
 const parse = <T>(raw: string | null): T | null => (raw ? (JSON.parse(raw) as T) : null)
@@ -100,6 +110,23 @@ export class MemoryStore implements PurpleStore {
 
   async savePushLog(log: PushLog): Promise<void> {
     this.log = structuredClone(log)
+  }
+
+  private commentList: CommentDto[] = []
+  private commenterLockedUntil = new Map<string, number>()
+
+  async comments(): Promise<CommentDto[]> {
+    return structuredClone(this.commentList)
+  }
+
+  async addComment(comment: CommentDto, keep: number): Promise<void> {
+    this.commentList = [structuredClone(comment), ...this.commentList].slice(0, keep)
+  }
+
+  async tryLockCommenter(id: string, now: Date, ms: number): Promise<boolean> {
+    if (now.getTime() < (this.commenterLockedUntil.get(id) ?? 0)) return false
+    this.commenterLockedUntil.set(id, now.getTime() + ms)
+    return true
   }
 }
 
@@ -166,6 +193,19 @@ export class RedisStore implements PurpleStore {
 
   async savePushLog(log: PushLog): Promise<void> {
     await this.command('SET', KEYS.pushLog, JSON.stringify(log))
+  }
+
+  async comments(): Promise<CommentDto[]> {
+    return (await this.command<string[]>('LRANGE', KEYS.comments, '0', '-1')).map((v) => JSON.parse(v) as CommentDto)
+  }
+
+  async addComment(comment: CommentDto, keep: number): Promise<void> {
+    await this.command('LPUSH', KEYS.comments, JSON.stringify(comment))
+    await this.command('LTRIM', KEYS.comments, '0', String(keep - 1))
+  }
+
+  async tryLockCommenter(id: string, now: Date, ms: number): Promise<boolean> {
+    return (await this.command<string | null>('SET', KEYS.commentLock + id, now.toISOString(), 'NX', 'PX', String(ms))) === 'OK'
   }
 }
 

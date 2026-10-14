@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { CalibrateDialog, CalibrationHistoryDialog, CalibrationNotice, CrawlHistoryDialog, MaintenanceAlert, MaintenanceInfo, PushToggle, StatusCard } from '@/components'
+import { CalibrateDialog, CalibrationHistoryDialog, CalibrationNotice, CommentFormDialog, CommentListDialog, CrawlHistoryDialog, MaintenanceAlert, MaintenanceInfo, PushToggle, StatusCard } from '@/components'
 import { useNow, usePurpleStatus } from '@/hooks'
+import type { CommentDto } from '@/models'
 import { TaipeiClock } from '@/utils'
 import version from './version.json'
 
@@ -8,7 +9,9 @@ export default function App() {
   const now = useNow()
   const { status, error, replace } = usePurpleStatus(now)
   const [calibrating, setCalibrating] = useState(false)
-  const [showing, setShowing] = useState<'calibrations' | 'crawls' | null>(null)
+  const [showing, setShowing] = useState<'calibrations' | 'crawls' | 'comment' | 'comments' | null>(null)
+  /** 剛留言完的最新列表，直接顯示不再讀取 */
+  const [posted, setPosted] = useState<CommentDto[]>()
 
   return (
     <main className="page">
@@ -62,6 +65,16 @@ export default function App() {
           onCalibrated={(next) => { replace(next); setCalibrating(false) }}
         />
       )}
+
+      <div className="comment-bar">
+        <button className="btn ghost" onClick={() => setShowing('comment')}>意見／嘴砲留言</button>
+        <button className="btn ghost" onClick={() => { setPosted(undefined); setShowing('comments') }}>查看留言</button>
+      </div>
+      {showing === 'comment' && (
+        <CommentFormDialog onClose={() => setShowing(null)}
+          onPosted={(comments) => { setPosted(comments); setShowing('comments') }} />
+      )}
+      {showing === 'comments' && <CommentListDialog initial={posted} onClose={() => setShowing(null)} />}
 
       <footer className="muted small site-updated">
         版本日期：{version.date}_V{version.build}

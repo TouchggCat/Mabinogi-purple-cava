@@ -76,7 +76,14 @@ header p { margin: 0.3rem 0 1.5rem; }
 .muted { color: var(--muted); }
 .small { font-size: 0.85rem; text-align: center; margin: 0.5rem 0; }
 .error { color: var(--error); }
-.site-updated { margin-top: 2rem; }
+.site-updated { margin-top: 1.5rem; }
+.comment-bar { display: flex; gap: 0.5rem; margin-top: 2rem; }
+.comment-bar .btn { flex: 1; }
+.comment-name { overflow-wrap: anywhere; }
+.comment-row-time { flex: none; align-self: baseline; }
+.comment-name { align-self: baseline; }
+.comment-content { margin-top: 0.3rem; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.field-count { text-align: right; margin: 0.25rem 0 0; }
 .text-btn { background: none; border: 0; padding: 0; font: inherit; line-height: 1.8; color: inherit; cursor: pointer; text-decoration: none; text-underline-offset: 0.25em; }
 .text-btn:hover, .text-btn:focus-visible { color: var(--text); text-decoration: underline dotted; }
 .history-list { list-style: none; margin: 1rem 0 0; padding: 0; font-variant-numeric: tabular-nums; max-height: 60vh; overflow-y: auto; }
@@ -155,6 +162,11 @@ header p { margin: 0.3rem 0 1.5rem; }
   border: 1px solid var(--line); border-radius: 0.5rem; background: var(--bg); color: var(--text);
 }
 .dialog input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.dialog textarea {
+  -webkit-appearance: none; appearance: none; display: block; width: 100%; min-width: 0; margin: 0; padding: 0.6rem 0.75rem;
+  font: inherit; font-size: 1rem; line-height: 1.5; resize: vertical;
+  border: 1px solid var(--line); border-radius: 0.5rem; background: var(--bg); color: var(--text);
+}
 .field-box.has-icon input { padding-right: 2.75rem; }
 /* iOS：日期時間文字預設置中、高度會縮 */
 .dialog input::-webkit-date-and-time-value { text-align: left; margin: 0; }

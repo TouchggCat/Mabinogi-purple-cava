@@ -1,4 +1,4 @@
-import { PurpleStatus, type CalibrateRequestDto, type ErrorDto, type PushConfigDto, type PushSubscriptionDto, type StatusDto } from '@/models'
+import { PurpleStatus, type CalibrateRequestDto, type CommentDto, type CommentRequestDto, type ErrorDto, type PushConfigDto, type PushSubscriptionDto, type StatusDto } from '@/models'
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {
@@ -36,6 +36,15 @@ export class PurpleApi {
 
   async unsubscribePush(endpoint: string): Promise<void> {
     await this.send('DELETE', '/push', { endpoint })
+  }
+
+  async getComments(): Promise<CommentDto[]> {
+    return this.request<CommentDto[]>('/comments')
+  }
+
+  /** 回傳新增後的留言列表 */
+  async postComment(body: CommentRequestDto): Promise<CommentDto[]> {
+    return this.send<CommentDto[]>('POST', '/comments', body)
   }
 
   private send<T>(method: string, path: string, body: unknown): Promise<T> {

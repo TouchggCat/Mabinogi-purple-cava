@@ -12,6 +12,7 @@ GitHub Actions（每 30 分鐘）           Vercel
                                          /api/status      ─┼─ Upstash Redis
   瀏覽器 ◀── React 網頁 ──────────────▶  /api/calibrate   ─┤
                                          /api/push        ─┤
+                                         /api/comments    ─┤
 cron-job.org（每 5 分鐘）──────────────▶  /api/notify      ─┘ → Web Push
 ```
 - `crawler/` Python 爬蟲：Playwright 過官網 Cloudflare（需有畫面的瀏覽器，Actions 用 Xvfb）、`parse.py` 解析維護時間
