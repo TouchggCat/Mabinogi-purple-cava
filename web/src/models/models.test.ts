@@ -86,11 +86,14 @@ describe('Maintenance', () => {
   const dto = { title: 't', url: 'u', type: '例行', start: '2026-10-08T06:00:00+08:00', end: null,
     original_end: null, posted_at: '2026-10-07T18:00:00+08:00', extended: false }
 
-  it('is recent within 3 days', () => {
+  it('is recent within 3 days, upcoming before it starts', () => {
     const m = Maintenance.fromDto(dto)
     expect(m.isRecent(tw('2026-10-11T06:00:00'), 3)).toBe(true)
     expect(m.isRecent(tw('2026-10-11T06:01:00'), 3)).toBe(false)
     expect(Maintenance.fromDto({ ...dto, start: null }).isRecent(tw('2026-10-10T18:00:00'), 3)).toBe(true)
+    expect(m.isUpcoming(tw('2026-10-08T05:59:00'))).toBe(true)
+    expect(m.isUpcoming(tw('2026-10-08T06:00:00'))).toBe(false)
+    expect(Maintenance.fromDto({ ...dto, start: null }).isUpcoming(tw('2026-10-01T00:00:00'))).toBe(false)
   })
 })
 

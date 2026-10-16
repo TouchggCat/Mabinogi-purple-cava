@@ -7,7 +7,11 @@ export function MaintenanceInfo({ maintenance: m, now }: { maintenance: Maintena
   return (
     <section className="maint">
       <h3>最近一次維護</h3>
-      {m.isRecent(now, APP.RECENT_MAINTENANCE_DAYS) && <p className="error recent-maint">近期有維護紀錄</p>}
+      {m.isUpcoming(now) ? (
+        <p className="recent-maint upcoming-maint">即將進行維護</p>
+      ) : m.isRecent(now, APP.RECENT_MAINTENANCE_DAYS) && (
+        <p className="error recent-maint">近期有維護紀錄</p>
+      )}
       <a href={m.url} target="_blank" rel="noreferrer">{m.title}</a>
       <p>
         {m.periodText}

@@ -23,6 +23,11 @@ export class Maintenance {
     )
   }
 
+  /** 維護尚未開始（官網已公告未來的維護） */
+  isUpcoming(now: Date): boolean {
+    return !!this.start && this.start.getTime() > now.getTime()
+  }
+
   /** 維護時間（無法解析時用公告時間）在最近 days 天內，或尚未到來 */
   isRecent(now: Date, days: number): boolean {
     const at = this.start ?? this.postedAt

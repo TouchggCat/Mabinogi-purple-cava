@@ -144,6 +144,7 @@ header p { margin: 0.3rem 0 1.5rem; }
 .maint { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
 .maint h3 { margin: 0 0 0.4rem; font-size: 0.95rem; color: var(--muted); font-weight: 500; }
 .maint .recent-maint { margin: 0 0 0.4rem; font-weight: 600; }
+.maint .upcoming-maint { color: var(--soon); }
 .maint a { color: var(--link); font-weight: 600; text-decoration: none; text-underline-offset: 0.25em; }
 .maint a:hover, .maint a:focus-visible { text-decoration: underline; }
 .maint p { margin: 0.4rem 0 0; font-variant-numeric: tabular-nums; }
