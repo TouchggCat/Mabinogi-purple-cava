@@ -36,8 +36,12 @@ class MaintenanceInfo:
     raw_time_text: str
 
 
+# 與遊戲伺服器無關的維護（例如 MyCard 儲值）不影響紫洞計時，忽略
+IGNORED_TITLE_RE = re.compile(r"mycard", re.IGNORECASE)
+
+
 def is_maintenance_title(title: str) -> bool:
-    return bool(TITLE_RE.search(title))
+    return bool(TITLE_RE.search(title)) and not IGNORED_TITLE_RE.search(title)
 
 
 def maintenance_type(title: str) -> str:

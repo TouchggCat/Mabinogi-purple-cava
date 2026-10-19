@@ -30,6 +30,11 @@ export const APP = {
   RECENT_MAINTENANCE_DAYS: 3,
 } as const
 
+/** 與遊戲伺服器無關的維護（例如 MyCard 儲值）不影響紫洞計時，忽略（爬蟲 crawler/parse.py 也有相同規則） */
+export function isIgnoredMaintenance(title: string): boolean {
+  return /mycard/i.test(title)
+}
+
 export const COMMENT = {
   NAME_MAX_LENGTH: 20,
   CONTENT_MAX_LENGTH: 100,

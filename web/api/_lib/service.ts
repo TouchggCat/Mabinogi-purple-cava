@@ -1,5 +1,5 @@
 import type { CalibrationDto, MaintenanceDto, MaintenancePostDto, StatusDto } from '../../shared/dto.js'
-import { CalibrationTime, PURPLE, checkCalibration, closingOf, spawnsAround } from '../../shared/rules.js'
+import { CalibrationTime, PURPLE, checkCalibration, closingOf, isIgnoredMaintenance, spawnsAround } from '../../shared/rules.js'
 import { HttpError } from './http.js'
 import { getStore, type Calibration, type PurpleStore } from './store.js'
 
@@ -46,7 +46,7 @@ export class PurpleService {
     const now = this.clock()
     const { calibrations, maintenance, crawls } = await this.store.snapshot()
     const calibration = calibrations[0]
-    const latest = [...maintenance].sort((a, b) => occurredAt(b) - occurredAt(a))[0] ?? null
+    const latest = maintenance.filter((m) => !isIgnoredMaintenance(m.title)).sort((a, b) => occurredAt(b) - occurredAt(a))[0] ?? null
 
     let recent = null
     let next = null

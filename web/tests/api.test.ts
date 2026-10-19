@@ -48,6 +48,14 @@ describe('PurpleService', () => {
     await expect(service.calibrate(body)).rejects.toMatchObject({ status: 400, message: detail })
   })
 
+  it('ignores MyCard maintenance', async () => {
+    await service.calibrate({ time: '2026-10-07 14:40', by: 'a' })
+    await upload([post('1', '2026-10-07T06:00:00'), { ...post('2', '2026-10-07T19:00:00'), title: '10/7 MyCard 臨時維護公告' }])
+    const s = await service.status()
+    expect(s.maintenance?.title).toBe('1 例行維護公告')
+    expect(s.needs_calibration).toBe(false)
+  })
+
   it('requires recalibration after a maintenance starts', async () => {
     await service.calibrate({ time: '2026-10-07 14:40', by: 'a' })
     await upload([post('1', '2026-10-14T06:00:00')])
