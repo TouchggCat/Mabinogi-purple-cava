@@ -9,11 +9,11 @@ const AUTH = 'Bearer notify'
 const sub = (id: string): PushSubscriptionDto => ({ endpoint: `https://push.example/${id}`, keys: { p256dh: 'p', auth: 'a' } })
 
 class FakeSender implements PushSender {
-  sent: { endpoint: string; message: PushMessage }[] = []
+  sent: { endpoint: string; message: PushMessage; ttl: number }[] = []
   gone = new Set<string>()
-  async send(s: PushSubscriptionDto, message: PushMessage) {
+  async send(s: PushSubscriptionDto, message: PushMessage, ttl: number) {
     if (this.gone.has(s.endpoint)) return 'gone' as const
-    this.sent.push({ endpoint: s.endpoint, message })
+    this.sent.push({ endpoint: s.endpoint, message, ttl })
     return 'ok' as const
   }
 }
@@ -39,7 +39,7 @@ describe('PushService', () => {
     return push.notify(AUTH)
   }
 
-  it('sends at 4, 3, 2, 1 hours and 30 minutes before, once each', async () => {
+  it('sends at 4, 3, 2, 1 hours and 30, 15 minutes before, once each', async () => {
     expect((await at('12:35:00')).reminder).toBeNull()
     expect((await at('12:36:00')).reminder).toBe(240)
     expect((await at('12:41:00')).reminder).toBeNull() // 同一個提醒不重發
@@ -47,10 +47,13 @@ describe('PushService', () => {
     expect((await at('14:36:00')).reminder).toBe(120)
     expect((await at('15:36:00')).reminder).toBe(60)
     expect((await at('16:06:00')).reminder).toBe(30)
+    expect((await at('16:20:00')).reminder).toBeNull()
+    expect((await at('16:21:00')).reminder).toBe(15)
     expect((await at('16:30:00')).reminder).toBeNull()
     expect(sender.sent.map((s) => s.message.title)).toEqual([
-      '紫洞再 4 小時開啟', '紫洞再 3 小時開啟', '紫洞再 2 小時開啟', '紫洞再 1 小時開啟', '紫洞再 30 分鐘開啟',
+      '紫洞再 4 小時開啟', '紫洞再 3 小時開啟', '紫洞再 2 小時開啟', '紫洞再 1 小時開啟', '紫洞再 30 分鐘開啟', '紫洞再 15 分鐘開啟',
     ])
+    expect(sender.sent.map((s) => s.ttl)).toEqual([1200, 1200, 1200, 1200, 1200, 900])
     expect(sender.sent[0].message.body).toBe('10/13  16:36 – 16:51')
   })
 

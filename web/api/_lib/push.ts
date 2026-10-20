@@ -21,7 +21,8 @@ export interface PushMessage {
 
 /** 實際送出推播；回傳 'gone' 代表訂閱已失效（使用者取消或解除安裝），應刪除 */
 export interface PushSender {
-  send(sub: PushSubscriptionDto, message: PushMessage): Promise<'ok' | 'gone' | 'failed'>
+  /** ttlSeconds：推播服務最多保留多久（裝置離線時），過期就不送 */
+  send(sub: PushSubscriptionDto, message: PushMessage, ttlSeconds: number): Promise<'ok' | 'gone' | 'failed'>
 }
 
 export interface Vapid {
@@ -34,10 +35,10 @@ export interface Vapid {
 export class WebPushSender implements PushSender {
   constructor(private readonly vapid: Vapid) {}
 
-  async send(sub: PushSubscriptionDto, message: PushMessage): Promise<'ok' | 'gone' | 'failed'> {
+  async send(sub: PushSubscriptionDto, message: PushMessage, ttlSeconds: number): Promise<'ok' | 'gone' | 'failed'> {
     try {
       await webpush.sendNotification(sub, JSON.stringify(message), {
-        TTL: GRACE_MS / 1000,
+        TTL: ttlSeconds,
         urgency: 'high',
         vapidDetails: this.vapid,
       })
@@ -137,8 +138,10 @@ export class PushService {
       url: '/',
     }
 
+    // 裝置離線時最多保留到紫洞開啟為止，開啟後才收到「再 15 分鐘」沒有意義
+    const ttl = Math.max(1, Math.floor(Math.min(GRACE_MS, start - now.getTime()) / 1000))
     const subs = await this.store.pushSubscriptions()
-    const outcomes = await Promise.all(subs.map((s) => this.sender!.send(s, message)))
+    const outcomes = await Promise.all(subs.map((s) => this.sender!.send(s, message, ttl)))
     const gone = subs.filter((_, i) => outcomes[i] === 'gone').map((s) => s.endpoint)
     await this.store.removePushSubscriptions(gone)
     result.delivered = outcomes.filter((o) => o === 'ok').length

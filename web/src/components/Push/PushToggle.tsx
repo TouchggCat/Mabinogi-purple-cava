@@ -8,7 +8,7 @@ const BELL_ICON = (
   </svg>
 )
 
-const SCHEDULE = '最近一場紫洞開啟前 4、3、2、1 小時，以及 30 分鐘前'
+const SCHEDULE = '最近一場紫洞開啟前 4、3、2、1 小時，以及 30 分鐘、15 分鐘前'
 
 /** 對話框內容：依目前狀態說明下一步 */
 function PushDialog({ state, busy, error, onConfirm, onClose }: {

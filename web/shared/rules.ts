@@ -19,8 +19,8 @@ export const PURPLE = {
   CALIBRATOR_MAX_LENGTH: 20,
   /** 校正冷卻時間：全站每分鐘最多校正一次 */
   CALIBRATION_COOLDOWN_MS: 60_000,
-  /** 推播提醒：開啟前幾分鐘（4、3、2、1 小時與 30 分鐘） */
-  REMINDER_MINUTES: [240, 180, 120, 60, 30],
+  /** 推播提醒：開啟前幾分鐘（4、3、2、1 小時與 30、15 分鐘） */
+  REMINDER_MINUTES: [240, 180, 120, 60, 30, 15],
 } as const
 
 export const APP = {
